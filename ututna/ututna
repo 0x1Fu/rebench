@@ -1,0 +1,81 @@
+#!/bin/bash
+
+TMPFILE=~out.s
+
+process() {
+  echo --- $1 ---
+
+  echo dissmebling $2...
+  ../disass $2 "${@:3}" > $TMPFILE
+
+  echo check missing...
+  ../check_missing $TMPFILE
+
+  echo refining...
+  echo -e '\t'.text > $1.s
+  for sym in "${@:3}"; do
+    if [[ $sym != *: ]]; then
+      echo -e '\t'.global $sym >> $1.s
+    fi
+  done
+  python ../refine.py $TMPFILE >> $1.s
+
+  echo post prossing...
+  post_process_$1 $1.s
+
+  rm $TMPFILE
+}
+
+replace() {
+  if [[ `uname -s` == Darwin ]]; then
+    sed -i '' "/^$2/s/$3/$4/" $1
+  else
+    sed -i "/^$2/s/$3/$4/" $1
+  fi
+}
+
+post_process_600.fft() {
+  replace $1 L5764c: ?1ac000   :got:__stack_chk_guard
+  replace $1 L57650: \#2912    \#\:got_lo12:__stack_chk_guard
+
+  replace $1 L576c4: ?1ac000   LC_1ac000_1840
+  replace $1 L576c8: \#1840    \#\:lo12:LC_1ac000_1840
+
+  replace $1 L576cc: ?14a000   LC_14a000_0x8f0
+  replace $1 L576d0: \#0x8f0   \#\:lo12:LC_14a000_0x8f0
+
+  replace $1 L57724: ?14a000   LC_14a000_2280
+  replace $1 L57734: \#2280    \#\:lo12:LC_14a000_2280
+
+  replace $1 L56bb0: ?14a000   LC_14a000_2256
+  replace $1 L56bb4: \#2256    \#\:lo12:LC_14a000_2256
+
+  replace $1 L57908: ?1ac000   LC_1ac000_1840
+  replace $1 L5790c: \#1840    \#\:lo12:LC_1ac000_1840
+
+  replace $1 L57910: ?14a000   LC_14a000_0x915
+  replace $1 L57914: \#0x915   \#\:lo12:LC_14a000_0x915
+
+  replace $1 L56e3c: ?14a000   LC_14a000_0x8d8
+  replace $1 L56e40: \#0x8d8   \#\:lo12:LC_14a000_0x8d8
+
+  cat >> $1 << EOF
+	.data.rel.ro
+LC_1ac000_1840:
+	.8byte 0
+LC_14a000_2280:
+	.8byte 0xC00921FB54442D18
+LC_14a000_2256:
+	.8byte 0xC01921FB54442D18
+LC_14a000_0x8d8:
+	.4byte L56e50 - LC_14a000_0x8d8
+	.4byte L56fe4 - LC_14a000_0x8d8
+	.4byte L5711c - LC_14a000_0x8d8
+	.4byte L57290 - LC_14a000_0x8d8
+LC_14a000_0x8f0:
+LC_14a000_0x915:
+	.string "error"
+EOF
+}
+
+process 600.fft libabenchmark.so kiss_fftr_alloc kiss_fftr 56d54:

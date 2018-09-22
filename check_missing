@@ -1,0 +1,57 @@
+#!/bin/bash
+
+input=$1
+
+branches=()
+
+contains() {
+  local array="$1[@]"
+  for e in "${!array}"; do
+    if [[ $e == $2 ]]; then
+      return 0
+    fi
+  done
+  return 1
+}
+
+append() {
+  contains branches $1 || {
+    branches+=($1)
+    echo $2
+  }
+}
+
+IFS='
+'
+for line in `cat $input | grep @@Base`
+do
+  ins=`echo $line | awk '{print $3}'`
+  [[ -z "$ins" ]] && continue
+
+  case "$ins" in
+  tbnz)
+      branch=`echo $line | awk '{print $6}'`
+      ;;
+  cbz|cbnz)
+      branch=`echo $line | awk '{print $5}'`
+      ;;
+  adrp)
+      branch=`echo $line | awk '{print $5}'`
+      append $branch $line
+      continue
+      ;;
+  bl|b|b.*)
+      branch=`echo $line | awk '{print $4}'`
+      ;;
+  *)
+      echo *$line
+      continue
+      ;;
+  esac
+  match=`cat $input | grep -w $branch: | head -1`
+  if [ -z "$match" ]; then
+    append $branch $line
+  fi
+done
+
+echo done

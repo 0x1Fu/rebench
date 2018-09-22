@@ -1,0 +1,73 @@
+#!/bin/bash
+
+[ -z "$ANDROID_NDK_HOME" ] && echo "ANDROID_NDK_HOME is not set" && exit 1
+
+path=$(cd `dirname $0`;pwd)
+
+objdump=$($path/ndk-which --abi arm64-v8a objdump)
+
+symbols=()
+
+contains() {
+  local array="$1[@]"
+  for e in "${!array}"; do
+    if [[ $e == $2 ]]; then
+      return 0
+    fi
+  done
+  return 1
+}
+
+append() {
+  contains symbols $1 || disass $1
+}
+
+process() {
+  lines=`cat $1 | grep @plt | awk '{print $5}'`
+
+IFS='
+'
+  for line in $lines
+  do
+    [[ $line =~ \<(.*)@plt\> ]] && append ${BASH_REMATCH[1]}
+  done
+}
+
+disass() {
+  symbols+=($1)
+  sym=`$objdump -T $file | grep -w $1`
+
+  if [ -n "$sym" ]; then
+    start=`echo $sym | awk '{print $1}'`
+
+    if [ $start != "0000000000000000" ]; then
+      type=`echo $sym | awk '{print $4}'`
+      size=`echo $sym | awk '{print $5}'`
+      end=`printf "%016x\n" $((0x$start+0x$size))`
+      printf '# %24s %s %s %s %s\n' "$1" "$start" "$end" "$size" "$type"
+
+      $objdump -d $file --start-address=0x$start --stop-address=0x$end | tee ~tmp.s
+      process ~tmp.s
+    fi
+  fi
+}
+
+disass_loc() {
+  printf '# %s\n' "$1:"
+
+  $objdump -d $file --start-address=0x$1 | sed '/ret/q' | tee ~tmp.s
+  process ~tmp.s
+}
+
+file=$1
+
+for symbol in ${@:2}
+do
+  if [[ $symbol = *: ]]; then
+    disass_loc ${symbol::${#symbol}-1}
+  else
+    disass $symbol
+  fi
+done
+
+rm -f ~tmp.s
