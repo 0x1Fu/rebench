@@ -6,8 +6,10 @@ file = open(sys.argv[1], 'r')
 lineno = -1
 
 symbols = []
+local_symbols = []
 unsafe_symbols = [
     'malloc', 'free',
+    '_ZdaPv', '_ZdaPv',
     'fopen', 'fread', 'fwrite', 'fclose',
     'exit']
 
@@ -22,11 +24,11 @@ REG = "(?P<reg>[x|d][0-9]+)"
 SPACE = "\s+"
 TAB = "\t"
 
-def sym(sym):
-    if sym in unsafe_symbols:
-        return "o_" + sym
+def import_sym(sym):
     if sym not in symbols:
         symbols.append(sym)
+    if sym in unsafe_symbols:
+        return "o_" + sym
     return sym
 
 def process_insts(line, m):
@@ -38,7 +40,7 @@ def process_insts(line, m):
         # 38a90 <kiss_fft_alloc@plt>
         mo = re.match(ADDR + SPACE + SYM_PLT, operands)
         if mo:
-            print("L{:x}:\t{} {}".format(addr, inst, sym(mo.group('sym'))))
+            print("L{:x}:\t{} {}".format(addr, inst, import_sym(mo.group('sym'))))
             return True
         # 577ac <kiss_fftr_alloc@@Base+0x184>
         mo = re.match(ADDR + SPACE + SYM_BASE_OFFSET, operands)
@@ -46,11 +48,11 @@ def process_insts(line, m):
             print("L{:x}:\t{} L{} // <{}@@Base+0x{}>".format(addr, inst,
                 mo.group('addr'), mo.group('sym'), mo.group('offset')))
             return True
-
         return False
 
     # tbnz    w23, #0, 576c4 <kiss_fftr_alloc@@Base+0x9c>
-    if inst in ['tbnz']:
+    # tbz     w0, #0, 581cc <test_sgemm@@Base+0x230>
+    if inst in ['tbz', 'tbnz']:
         mo = re.match("(?P<op1>.+), (?P<op2>.+), " + ADDR + SPACE + SYM_BASE_OFFSET, operands)
         if mo:
             print("L{:x}:\t{} {}, {}, L{} // <{}@@Base+0x{}>".format(addr, inst, mo.group('op1'), mo.group('op2'),
@@ -65,11 +67,16 @@ def process_insts(line, m):
             return True
 
     # adrp    x9, 14a000 <av_sha_size@@Base+0x830>
+    # adrp    x1, e1000 <_ZNSt13bad_exceptionD1Ev@@Base>
     if m.group('inst') == 'adrp':
         mo = re.match(REG + ", " + ADDR + SPACE + SYM_BASE_OFFSET, operands)
-        print("L{:x}:\t{} {}, ?{}".format(addr, inst, mo.group('reg'),
+        if not mo:
+            mo = re.match(REG + ", " + ADDR + SPACE + SYM_BASE, operands)
+        if mo:
+            print("L{:x}:\t{} {}, ?{}".format(addr, inst, mo.group('reg'),
                 mo.group('addr')))
-        return True
+            return True
+        return False
 
     if '@' in m.group('operands'):
         return False
@@ -99,7 +106,10 @@ while True:
     # 0000000000000008 <syms@@Base>:
     m = re.match(ADDR + SPACE + SYM_BASE + ":", line)
     if m:
-        print("{0}:".format(m.group('sym')))
+        sym = m.group('sym')
+        if sym not in local_symbols:
+            local_symbols.append(sym)
+        print("{0}:".format(sym))
         continue
     # 0000000000056d54 <kiss_fft_stride@@Base+0xb0>:
     m = re.match(ADDR + SPACE + SYM_BASE_OFFSET + ":", line)
@@ -120,10 +130,17 @@ while True:
             print("L{:x}:\t{}".format(int(m.group('addr'), 16), m.group('inst')))
             continue
 
+    sys.stdout.flush()
     sys.stderr.write("error at line #{0}\n".format(lineno))
     sys.stderr.write(line + "\n")
     break
 
+sys.stdout.flush()
 sys.stderr.write("symbols:\n")
 for sym in sorted(symbols):
-    sys.stderr.write("  " + sym + "\n")
+    if sym in unsafe_symbols:
+        sys.stderr.write("  " + sym + " (unsafe)\n")
+    elif sym in local_symbols:
+        sys.stderr.write("  " + sym + " (local)\n")
+    else:
+        sys.stderr.write("  " + sym + "\n")

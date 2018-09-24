@@ -29,24 +29,24 @@ do
   [[ -z "$ins" ]] && continue
 
   case "$ins" in
-  tbnz)
-      branch=`echo $line | awk '{print $6}'`
-      ;;
+  tbz|tbnz)
+    branch=`echo $line | awk '{print $6}'`
+    ;;
   cbz|cbnz)
-      branch=`echo $line | awk '{print $5}'`
-      ;;
+    branch=`echo $line | awk '{print $5}'`
+    ;;
   adrp)
-      branch=`echo $line | awk '{print $5}'`
-      append $branch $line
-      continue
-      ;;
+    branch=`echo $line | awk '{print $5}'`
+    append $branch $line
+    continue
+    ;;
   bl|b|b.*)
-      branch=`echo $line | awk '{print $4}'`
-      ;;
+    branch=`echo $line | awk '{print $4}'`
+    ;;
   *)
-      echo *$line
-      continue
-      ;;
+    echo *$line
+    continue
+    ;;
   esac
   match=`cat $input | grep -w $branch: | head -1`
   if [ -z "$match" ]; then
