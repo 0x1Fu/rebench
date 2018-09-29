@@ -1,5 +1,8 @@
 #!/bin/bash
 
+[ -z "$ANDROID_NDK_HOME" ] && echo "ANDROID_NDK_HOME is not set" && exit 1
+[ ! -f libabenchmark.so ] && echo "libabenchmark.so is missing" && exit 1
+
 TMPFILE=~tmp.s
 
 process() {
@@ -13,6 +16,7 @@ process() {
 
   echo refining...
   echo -e '\t'.text > $1.s
+  echo -e '\t'.align 3 >> $1.s
   for sym in "${@:3}"; do
     if [[ $sym != *: ]]; then
       echo -e '\t'.global $sym >> $1.s
@@ -21,7 +25,7 @@ process() {
   python ../refine.py $TMPFILE >> $1.s
 
   echo post prossing...
-  post_process_$1 $1.s
+  python ../post.py $1.s
 
   rm $TMPFILE
 }
@@ -32,138 +36,6 @@ replace() {
   else
     sed -i "/^$2/s/$3/$4/" $1
   fi
-}
-
-post_process_600.fft() {
-  replace $1 L5764c: ?1ac000   :got:__stack_chk_guard
-  replace $1 L57650: \#2912    \#\:got_lo12:__stack_chk_guard
-
-  replace $1 L576c4: ?1ac000   LC_1ac000_1840
-  replace $1 L576c8: \#1840    \#\:lo12:LC_1ac000_1840
-
-  replace $1 L576cc: ?14a000   LC_14a000_0x8f0
-  replace $1 L576d0: \#0x8f0   \#\:lo12:LC_14a000_0x8f0
-
-  replace $1 L57724: ?14a000   LC_14a000_2280
-  replace $1 L57734: \#2280    \#\:lo12:LC_14a000_2280
-
-  replace $1 L56bb0: ?14a000   LC_14a000_2256
-  replace $1 L56bb4: \#2256    \#\:lo12:LC_14a000_2256
-
-  replace $1 L57908: ?1ac000   LC_1ac000_1840
-  replace $1 L5790c: \#1840    \#\:lo12:LC_1ac000_1840
-
-  replace $1 L57910: ?14a000   LC_14a000_0x915
-  replace $1 L57914: \#0x915   \#\:lo12:LC_14a000_0x915
-
-  replace $1 L56e3c: ?14a000   LC_14a000_0x8d8
-  replace $1 L56e40: \#0x8d8   \#\:lo12:LC_14a000_0x8d8
-
-  cat >> $1 << EOF
-	.data.rel.ro
-LC_1ac000_1840:
-	.8byte 0
-LC_14a000_2280:
-	.8byte 0xC00921FB54442D18
-LC_14a000_2256:
-	.8byte 0xC01921FB54442D18
-LC_14a000_0x8d8:
-	.4byte L56e50 - LC_14a000_0x8d8
-	.4byte L56fe4 - LC_14a000_0x8d8
-	.4byte L5711c - LC_14a000_0x8d8
-	.4byte L57290 - LC_14a000_0x8d8
-LC_14a000_0x8f0:
-LC_14a000_0x915:
-	.string "error"
-EOF
-}
-
-post_process_601.gemm(){
-  replace $1 L57fbc: ?1ac000   :got:__stack_chk_guard
-  replace $1 L57fc0: \#2912    \#\:got_lo12:__stack_chk_guard
-
-  replace $1 L57ff0: ?14a000   LC_14a000_2224
-  replace $1 L57ff8: \#2224    \#\:lo12:LC_14a000_2224
-
-  replace $1 L57ff4: ?14a000   LC_14a000_2240
-  replace $1 L57ffc: \#2240    \#\:lo12:LC_14a000_2240
-
-  replace $1 L5804c: ?14a000   LC_14a000_2224
-  replace $1 L58054: \#2224    \#\:lo12:LC_14a000_2224
-
-  replace $1 L58050: ?14a000   LC_14a000_2240
-  replace $1 L58058: \#2240    \#\:lo12:LC_14a000_2240
-
-  replace $1 L580e8: ?148000   LC_148000_3056
-  replace $1 L580ec: \#3056    \#\:lo12:LC_148000_3056
-
-  replace $1 L58148: ?14a000   LC_14a000_2368
-  replace $1 L5814c: \#2368    \#\:lo12:LC_14a000_2368
-
-  replace $1 L58170: ?14a000   LC_14a000_2376
-  replace $1 L58174: \#2376    \#\:lo12:LC_14a000_2376
-
-  replace $1 L58490: ?1ac000   :got:__stack_chk_guard
-  replace $1 L58494: \#2912    \#\:got_lo12:__stack_chk_guard
-
-  replace $1 L58728: ?1ac000   :got:__stack_chk_guard
-  replace $1 L58730: \#2912    \#\:got_lo12:__stack_chk_guard
-
-  # dgemm
-  replace $1 L581f8: ?1ac000   :got:__stack_chk_guard
-  replace $1 L581fc: \#2912    \#\:got_lo12:__stack_chk_guard
-
-  replace $1 L5822c: ?14a000   LC_14a000_2384
-  replace $1 L58234: \#2384    \#\:lo12:LC_14a000_2384
-
-  replace $1 L58230: ?14a000   LC_14a000_2392
-  replace $1 L58238: \#2392    \#\:lo12:LC_14a000_2392
-
-  replace $1 L58290: ?14a000   LC_14a000_2384
-  replace $1 L58298: \#2384    \#\:lo12:LC_14a000_2384
-
-  replace $1 L58294: ?14a000   LC_14a000_2392
-  replace $1 L5829c: \#2392    \#\:lo12:LC_14a000_2392
-
-  replace $1 L58334: ?148000   LC_148000_3056
-  replace $1 L58338: \#3056    \#\:lo12:LC_148000_3056
-
-  replace $1 L58394: ?14a000   LC_14a000_2368
-  replace $1 L58398: \#2368    \#\:lo12:LC_14a000_2368
-
-  replace $1 L583bc: ?14a000   LC_14a000_2376
-  replace $1 L583c0: \#2376    \#\:lo12:LC_14a000_2376
-
-  replace $1 L57d34: ?1ac000   :got:__stack_chk_guard
-  replace $1 L57d38: \#2912    \#\:got_lo12:__stack_chk_guard
-
-  replace $1 L57f60: ?1ac000   :got:__stack_chk_guard
-  replace $1 L57f68: \#2912    \#\:got_lo12:__stack_chk_guard
-
-  cat >> $1 << EOF
-_Z21test_functional_sgemmjPfS_:
-_Z21test_functional_dgemmjPdS_:
-	mov x0, #0
-	ret
-	.data.rel
-LC_14a000_2224:
-	.8byte 0x100000000
-	.8byte 0x300000002
-LC_14a000_2240:
-	.8byte 0x500000004
-	.8byte 0x700000006
-LC_148000_3056:
-	.8byte 0x412E848000000000
-LC_14a000_2368:
-	.8byte 0x4180000000000000
-LC_14a000_2376:
-	.8byte 0x41CDCD6500000000
-
-LC_14a000_2384:
-	.8byte 0x100000000
-LC_14a000_2392:
-	.8byte 0x300000002
-EOF
 }
 
 LIB=libabenchmark.so
