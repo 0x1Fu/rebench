@@ -2,6 +2,7 @@
 
 Supported Benchmarks,
 
-* Antutu 7.1.6
-> - [x] 600 FFT
-> - [x] 601 GEMM
+**Antutu 7.1.6**
+> * 600 FFT
+> * 601 GEMM
+> * 603 MAP

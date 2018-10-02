@@ -5,7 +5,8 @@ LOCAL_MODULE := ututna
 LOCAL_SRC_FILES := \
     main.c \
     dummy.c \
-    600.fft.s \
-    601.gemm.s
+    600_fft.s \
+    601_gemm.s \
+    603_map.s
 LOCAL_LDFLAGS := -static
 include $(BUILD_EXECUTABLE)

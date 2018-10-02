@@ -26,15 +26,23 @@ disass() {
 }
 
 disass_loc() {
-  printf '# %s\n' "$1:"
+  arr=(${1//-/ })
+  start=${arr[0]}
+  end=${arr[1]}
 
-  $objdump -d $elf --start-address=0x$1 | sed '/ret/q'
+  printf '# %s\n' "$start:"
+
+  $objdump -d $elf --start-address=0x$start --stop-address=0x$end
 }
 
 for symbol in ${@:2}
 do
-  if [[ $symbol = *: ]]; then
-    disass_loc ${symbol::${#symbol}-1}
+  if [[ $symbol = \?* ]]; then
+    continue
+  elif [[ $symbol = L* ]]; then
+    disass_loc ${symbol:1}
+  elif [[ $symbol = @* ]]; then
+    disass ${symbol:1}
   else
     disass $symbol
   fi

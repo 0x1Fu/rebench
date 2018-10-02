@@ -11,17 +11,14 @@ process() {
   echo dissmebling $2...
   ../disass $2 "${@:3}" > $TMPFILE
 
-  echo check missing...
-  ../check_missing $TMPFILE
-
   echo refining...
   echo -e '\t'.text > $1.s
-  echo -e '\t'.align 3 >> $1.s
   for sym in "${@:3}"; do
-    if [[ $sym != *: ]]; then
-      echo -e '\t'.global $sym >> $1.s
+    if [[ $sym == @* ]]; then
+      echo -e '\t'.global ${sym:1} >> $1.s
     fi
   done
+  echo -e '\t'.align 3 >> $1.s
   python ../refine.py $TMPFILE >> $1.s
 
   echo post prossing...
@@ -40,6 +37,34 @@ replace() {
 
 LIB=libabenchmark.so
 
-process 600.fft $LIB kiss_fftr_alloc kiss_fft_alloc kiss_fftr kiss_fft 56d54:
-process 601.gemm $LIB test_sgemm _Z5sgemmjPfS_S_ _Z10sgemm_neonjPfS_S_ \
-  test_dgemm _Z5dgemmjPdS_S_ _Z8gemm_optIdEvjPT_S1_S1_
+process 600_fft $LIB \
+  @kiss_fftr_alloc kiss_fft_alloc \
+  @kiss_fftr kiss_fft L56d54-574dc
+process 601_gemm $LIB \
+  @test_sgemm @_Z5sgemmjPfS_S_ _Z10sgemm_neonjPfS_S_ \
+  @test_dgemm @_Z5dgemmjPdS_S_ _Z8gemm_optIdEvjPT_S1_S1_
+process 603_map $LIB \
+  @test_map \
+  _Z16test_map_orderedd \
+  _Z18test_map_unorderedd \
+  ?_Z15test_const_timeR8CMapTestd \
+  _ZN8CMapTestC2Ev \
+  _ZN8CMapTestD2Ev \
+  _ZN8CMapTest9init_testEjjj \
+  _ZN8CMapTest9fini_testEv \
+  _ZNSt3mapIj12SDataElementSt4lessIjESaISt4pairIKjS0_EEEixERS4_ \
+  _ZNSt8_Rb_treeIjSt4pairIKj12SDataElementESt10_Select1stIS3_ESt4lessIjESaIS3_EE29_M_get_insert_hint_unique_posESt23_Rb_tree_const_iteratorIS3_ERS1_ \
+  _ZN12CMapTestImplISt3mapIj12SDataElementSt4lessIjESaISt4pairIKjS1_EEESt17_Rb_tree_iteratorIS6_EE4testEPj \
+  _ZN8CMapTest13shuffle_arrayEPjj \
+  _ZNSt8_Rb_treeIjSt4pairIKj12SDataElementESt10_Select1stIS3_ESt4lessIjESaIS3_EE5eraseERS1_ \
+  _ZNK8CMapTest16get_ops_per_testEv \
+  _ZNSt8_Rb_treeIjSt4pairIKj12SDataElementESt10_Select1stIS3_ESt4lessIjESaIS3_EE8_M_eraseEPSt13_Rb_tree_nodeIS3_E \
+  _ZN12CMapTestImplISt13unordered_mapIj12SDataElementSt4hashIjESt8equal_toIjESaISt4pairIKjS1_EEENSt8__detail14_Node_iteratorIS8_Lb0ELb0EEEEC2Ev \
+  _ZN12CMapTestImplISt13unordered_mapIj12SDataElementSt4hashIjESt8equal_toIjESaISt4pairIKjS1_EEENSt8__detail14_Node_iteratorIS8_Lb0ELb0EEEE9init_testEjjj \
+  _ZNSt10_HashtableIjSt4pairIKj12SDataElementESaIS3_ENSt8__detail10_Select1stESt8equal_toIjESt4hashIjENS5_18_Mod_range_hashingENS5_20_Default_ranged_hashENS5_20_Prime_rehash_policyENS5_17_Hashtable_traitsILb0ELb0ELb1EEEE21_M_insert_unique_nodeEmmPNS5_10_Hash_nodeIS3_Lb0EEE \
+  _ZNSt10_HashtableIjSt4pairIKj12SDataElementESaIS3_ENSt8__detail10_Select1stESt8equal_toIjESt4hashIjENS5_18_Mod_range_hashingENS5_20_Default_ranged_hashENS5_20_Prime_rehash_policyENS5_17_Hashtable_traitsILb0ELb0ELb1EEEE13_M_rehash_auxEmSt17integral_constantIbLb1EE \
+  _ZNSt10_HashtableIjSt4pairIKj12SDataElementESaIS3_ENSt8__detail10_Select1stESt8equal_toIjESt4hashIjENS5_18_Mod_range_hashingENS5_20_Default_ranged_hashENS5_20_Prime_rehash_policyENS5_17_Hashtable_traitsILb0ELb0ELb1EEEE6rehashEm \
+  _ZN12CMapTestImplISt13unordered_mapIj12SDataElementSt4hashIjESt8equal_toIjESaISt4pairIKjS1_EEENSt8__detail14_Node_iteratorIS8_Lb0ELb0EEEE4testEPj \
+  __floatsitf __extendsftf2 __multf3 __trunctfdf2 __floatunditf __divtf3 __getf2 \
+  L10f608-10f7f8 L10f928-10fe94 L129290-1294e8
+replace 603_map.s _ZN8CMapTestD1Ev: _ZN8CMapTestD1Ev _ZN8CMapTestD2Ev

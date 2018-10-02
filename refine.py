@@ -3,15 +3,19 @@ import sys
 
 file = open(sys.argv[1], 'r')
 
-lineno = -1
+lineno = 0
 
 symbols = []
 local_symbols = []
 unsafe_symbols = [
     'malloc', 'free',
-    '_ZdaPv', '_ZdaPv',
+    '_ZdaPv', '_ZdlPv', '_Znam', '_Znwm',
     'fopen', 'fread', 'fwrite', 'fclose',
-    'exit']
+    'exit', 'abort',
+    '__stack_chk_fail',
+    '__sfp_handle_exceptions',
+    '__cxa_begin_catch', '__cxa_end_catch', '__cxa_rethrow', '_Unwind_Resume'
+]
 
 ADDR = "(?P<addr>[0-9A-Fa-f]+)"
 SYM_PLT = "<(?P<sym>.+)@plt>"
@@ -78,6 +82,14 @@ def process_insts(line, m):
             return True
         return False
 
+    # adr    x1, e127c <__cxa_get_globals@@Base+0x108>
+    if m.group('inst') == 'adr':
+        mo = re.match(REG + ", " + ADDR + SPACE + SYM_BASE_OFFSET, operands)
+        if mo:
+            print("L{:x}:\t{} {}, L{}".format(addr, inst, mo.group('reg'),
+                                              mo.group('addr')))
+            return True
+
     if '@' in m.group('operands'):
         return False
 
@@ -133,14 +145,19 @@ while True:
     sys.stdout.flush()
     sys.stderr.write("error at line #{0}\n".format(lineno))
     sys.stderr.write(line + "\n")
+    sys.exit(-1)
     break
 
 sys.stdout.flush()
 sys.stderr.write("symbols:\n")
-for sym in sorted(symbols):
+
+_symbols = []
+for sym in symbols:
     if sym in unsafe_symbols:
-        sys.stderr.write("  " + sym + " (unsafe)\n")
+        _symbols.append("(unsafe) " + sym)
     elif sym in local_symbols:
-        sys.stderr.write("  " + sym + " (local)\n")
+        _symbols.append("(local) " + sym)
     else:
-        sys.stderr.write("  " + sym + "\n")
+        _symbols.append("" + sym)
+for sym in sorted(_symbols):
+	sys.stderr.write("  " + sym + "\n")

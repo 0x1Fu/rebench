@@ -59,4 +59,5 @@ for s in replaces:
     cmd = "sed -i '' {} {}".format(s, file)
     os.system("sed -i '' {} {}".format(s, file))
 
-os.system("cat {} >> {}".format("post." + file, file))
+with open(file,'ab') as f:
+    f.write('\r.include "{}"\r'.format(file.replace(".s", ".inc")))
