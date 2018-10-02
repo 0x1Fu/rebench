@@ -3,7 +3,7 @@ import sys
 import re
 
 file = sys.argv[1]
-results = os.popen("cat " + file + " | grep adrp -A 5")
+results = os.popen("cat " + file + " | grep adrp -A 6")
 
 tmp = {}
 replaces = []
@@ -43,6 +43,7 @@ while True:
     # L57ff8:    ldr q0, [x8,#2224]
     # L5814c:    ldr d0, [x8,#2368]
     # L58494:    ldr x8, [x8,#2912]
+    # L445780:   ldr d2, [x10]
     mo = re.match(LABEL + "\tldr " + REG + ", \[" + REG2 + "," + OFFSET, line)
     if mo:
         reg = mo.group('reg2')
@@ -52,6 +53,15 @@ while True:
             s = "/^L{}:/s/?{}/{}/".format(tmp[reg]['label'], tmp[reg]['addr'], addr)
             replaces.append(s)
             s = "/^L{}:/s/\#{}/\#:lo12:{}/".format(mo.group('label'), mo.group('offset'), addr)
+            replaces.append(s)
+            del tmp[reg]
+    mo = re.match(LABEL + "\tldr " + REG + ", \[" + REG2 + "\]", line)
+    if mo:
+        reg = mo.group('reg2')
+        if reg in tmp:
+            local = {}
+            addr = "LC_{:x}".format(int(tmp[reg]['addr'], 16))
+            s = "/^L{}:/s/?{}/{}/".format(tmp[reg]['label'], tmp[reg]['addr'], addr)
             replaces.append(s)
             del tmp[reg]
 

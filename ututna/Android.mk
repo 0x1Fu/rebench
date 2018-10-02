@@ -8,5 +8,6 @@ LOCAL_SRC_FILES := \
     600_fft.s \
     601_gemm.s \
     603_map.s
+LOCAL_C_INCLUDES := #../stdlib
 LOCAL_LDFLAGS := -static
 include $(BUILD_EXECUTABLE)

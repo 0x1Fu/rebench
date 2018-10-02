@@ -65,6 +65,7 @@ void func() { \
 UNIMPLEMENTED(o_unimplemented)
 UNIMPLEMENTED(o_fwrite)
 UNIMPLEMENTED(o_exit)
+UNIMPLEMENTED(o_gettimeofday)
 
 UNIMPLEMENTED(o___stack_chk_fail)
 UNIMPLEMENTED(o___sfp_handle_exceptions)

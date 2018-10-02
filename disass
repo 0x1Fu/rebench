@@ -1,15 +1,29 @@
 #!/bin/bash
 
+# usage: disass [--static] elf sym1 sym2 ...
+
 [ -z "$ANDROID_NDK_HOME" ] && echo "ANDROID_NDK_HOME is not set" && exit 1
 
-elf=$1
-
 path=$(cd `dirname $0`; pwd)
+
+while true; do
+  case "$1" in
+  --static) static=1; shift;;
+  *) break;;
+  esac
+done
+
+elf=$1
+shift
 
 objdump=$($path/ndk-which --abi arm64-v8a objdump)
 
 disass() {
-  sym=`$objdump -T $elf | grep -w $1`
+  if [[ $static == 1 ]]; then
+    sym=`$objdump -t $elf | grep -w $1 | grep -w g`
+  else
+    sym=`$objdump -T $elf | grep -w $1`
+  fi
 
   if [ -n "$sym" ]; then
     start=`echo $sym | awk '{print $1}'`
@@ -35,7 +49,7 @@ disass_loc() {
   $objdump -d $elf --start-address=0x$start --stop-address=0x$end
 }
 
-for symbol in ${@:2}
+for symbol in ${@}
 do
   if [[ $symbol = \?* ]]; then
     continue
