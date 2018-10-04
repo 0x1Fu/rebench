@@ -1,4 +1,5 @@
-	.align 4
+	.text
+	.align 3
 
 LC_148bf0:
 	.8byte 0x412E848000000000
@@ -6,11 +7,15 @@ LC_148bf0:
 LC_159170:
 	.include "LC_159170.s"
 
+LC_stack_chk_guard:
+	.8byte 0x1234567890abcdef
+
 	.align 4
 LC_159b00:
 	.8byte 0x707050503020202
 	.8byte 0xB0B0B0B
 
+	.align 1
 LC_15b330:
 	.2byte 0xC0
 	.2byte 0x166
@@ -29,7 +34,7 @@ LC_15b330:
 	.2byte 0xB8
 	.2byte 0
 
-	.align 3
+	.align 1
 LC_15b350:
 	.2byte 2
 	.2byte 2
@@ -48,7 +53,13 @@ LC_15b350:
 	.2byte 0x64
 	.2byte 0
 
-	.align 4
+	.align 3
+L4b790:
+L1283f0:
+	bl o_unimplemented
+
+	.data.rel.ro
+	.align 3
 
 // 1a6de8
 vtable_CMapTest:
@@ -88,21 +99,11 @@ vtable_1a6e98:
 
 LC_1ac430:
 	.8byte dummy
-
 LC_1ac8e8:
 	.8byte vtable_1a6e98
-
-LC_1acb60_stack_chk_guard:
-	.8byte 0x1234567890abcdef
 LC_1acb60:
-	.8byte LC_1acb60_stack_chk_guard
-
+	.8byte LC_stack_chk_guard
 LC_1acea8:
 	.8byte vtable_CMapTest
 LC_1acee8:
 	.8byte vtable_CMapTestImp
-
-L4b790:
-L1283f0:
-	bl o_unimplemented
-
