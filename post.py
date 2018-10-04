@@ -3,7 +3,7 @@ import sys
 import re
 
 file = sys.argv[1]
-results = os.popen("cat " + file + " | grep adrp -A 6")
+results = os.popen("cat " + file + " | grep adrp -A 7")
 
 tmp = {}
 replaces = []

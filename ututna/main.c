@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #include <sys/time.h>
 
-char *heap_start();
-void heap_reset();
+extern char *heap_start();
+extern void heap_reset();
 
 static struct timeval start;
 
@@ -21,8 +21,18 @@ double end() {
 	return seconds;
 }
 
-void *kiss_fftr_alloc(int, int, char*, char*);
-void kiss_fftr(void*, char*, char*);
+void print_header(void) {
+	fprintf(stderr, "%-12s %7s %8s  %s\n", "NAME", "SCORE", "LOOPS", "DURATION(s)");
+}
+void print_score(const char *name, double score, int loops, double secs) {
+	if (score == 0.0)
+		fprintf(stderr, "%-12s %7s %8d  %.6f\n", name, "-", loops, secs);
+	else
+		fprintf(stderr, "%-12s %7u %8d  %.6f\n", name, (int)(score + 0.5), loops, secs);
+}
+
+extern void *kiss_fftr_alloc(int, int, char*, char*);
+extern void kiss_fftr(void*, char*, char*);
 
 void test_600_fft(int loops) {
 	heap_reset();
@@ -37,12 +47,12 @@ void test_600_fft(int loops) {
 		kiss_fftr(cfg, timedata, freqdata);
 	double secs = end();
 
-	unsigned int score = (unsigned int)((double)loops / secs + 0.5);
-	fprintf(stderr, "600_FFT: %u (loops: %d, %.6fs)\n", score, loops, secs);
+	double score = (double)loops / secs;
+	print_score("600_FFT", score, loops, secs);
 }
 
-double  test_sgemm(unsigned long long, double);
-int _Z5sgemmjPfS_S_(unsigned int, void*, void*, void*);
+extern double test_sgemm(unsigned long long, double);
+extern int _Z5sgemmjPfS_S_(unsigned int, void*, void*, void*);
 
 double test_601_sgemm(int loops) {
 	heap_reset();
@@ -63,8 +73,8 @@ double test_601_sgemm(int loops) {
 	return end();
 }
 
-double  test_dgemm(unsigned long long, double);
-int _Z5dgemmjPdS_S_(unsigned int, void*, void*, void*);
+extern double test_dgemm(unsigned long long, double);
+extern int _Z5dgemmjPdS_S_(unsigned int, void*, void*, void*);
 
 double test_601_dgemm(int loops) {
 	heap_reset();
@@ -89,21 +99,18 @@ void test_601_gemm(int loops) {
 	double sgemm = test_601_sgemm(loops);
 	double dgemm = test_601_dgemm(loops / 2);
 
-	unsigned int score_sgemm = (unsigned int)((double)loops * 335.54432 / sgemm + 0.5);
-	unsigned int score_dgemm = (unsigned int)((double)loops * 335.54432 / dgemm + 0.5);
+	double score_sgemm = (double)loops * 335.54432 / sgemm;
+	double score_dgemm = (double)loops * 335.54432 / dgemm;
 
-	fprintf(stderr, "601_GEMM: %u (loops: %d, %.6fs)\n",
-		   score_sgemm + score_dgemm, loops, sgemm + dgemm);
-	fprintf(stderr, "  6011_SGEMM: %u (loops: %d, %.6fs)\n",
-		   score_sgemm, loops, sgemm);
-	fprintf(stderr, "  6012_DGEMM: %u (loops: %d, %.6fs)\n",
-		   score_dgemm, loops / 2, dgemm);
+	print_score("601_GEMM",   score_sgemm + score_dgemm, loops, sgemm + dgemm);
+	print_score(" SGEMM", score_sgemm, loops, sgemm);
+	print_score(" DGEMM", score_dgemm, loops / 2, dgemm);
 }
 
+extern double test_map(int loops);
 uint64_t dummy = 0;
 static int test_map_idx = 0;
 static double test_map_results[2];
-double test_map(int loops);
 typedef long (* maptest_func1_t)(void *, void *);
 typedef long (* maptest_func2_t)(void *);
 
@@ -133,10 +140,27 @@ void test_603_map(int loops) {
 	heap_reset();
 
 	test_map_idx = 0;
-	double score = test_map(loops * 2) * 10000.0 + 0.5;
-	fprintf(stderr, "603_MAP: %d\n", (int)score);
-	fprintf(stderr, "  6031_MAP: (loops: %d, %.6fs)\n", loops, test_map_results[0]);
-	fprintf(stderr, "  6031_MAP: (loops: %d, %.6fs)\n", loops * 10, test_map_results[1]);
+	double score = test_map(loops * 2) * 10000.0;
+
+	print_score("603_MAP", score, loops, test_map_results[0] + test_map_results[1]);
+	print_score(" ORDERED", 0, loops, test_map_results[0]);
+	print_score(" UNORDERED", 0, loops * 10, test_map_results[1]);
+}
+
+extern double _Z10loadMemPNGPhjP7BmpData(void *, int, void *);
+extern unsigned char test_png[];
+extern unsigned int test_png_len;
+
+void test_609_png(int loops) {
+	heap_reset();
+
+	char buf[128] = { 0 };
+	double secs = 0;
+	for (int i=0; i<loops; i++)
+		secs += _Z10loadMemPNGPhjP7BmpData(test_png, test_png_len, buf);
+
+	double score = (double)loops * 1000.0 / secs;
+	print_score("603_PNG", score, loops, secs);
 }
 
 int main(int argc, char *argv[]) {
@@ -144,9 +168,11 @@ int main(int argc, char *argv[]) {
 	int arg2 = argc > 2 ? atoi(argv[2]) : 0;
 
 	fprintf(stderr, "UTUTNA:\n");
+	print_header();
 	if (arg1 == 0 || arg1 == 600) test_600_fft(arg2 ? arg2 : 100000);
 	if (arg1 == 0 || arg1 == 601) test_601_gemm(arg2 ? arg2 : 500);
 	if (arg1 == 0 || arg1 == 603) test_603_map(arg2 ? arg2 : 250);
+	if (arg1 == 0 || arg1 == 609) test_609_png(arg2 ? arg2 : 400);
 
 	return 0;
 }

@@ -7,7 +7,9 @@ LOCAL_SRC_FILES := \
     dummy.c \
     600_fft.s \
     601_gemm.s \
-    603_map.s
+    603_map.s \
+    609_png.s \
+    test_png.c
 LOCAL_C_INCLUDES := #../stdlib
-LOCAL_LDFLAGS := -static
+LOCAL_LDFLAGS := -lz -static
 include $(BUILD_EXECUTABLE)

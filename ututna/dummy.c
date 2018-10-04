@@ -1,8 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <memory.h>
+#include <setjmp.h>
 
-#define MAX_MALLOC_SIZE (200 * 1024 * 1024)
+#define MAX_MALLOC_SIZE (800 * 1024 * 1024)
 
 static char _buf[MAX_MALLOC_SIZE] = { 0 };
 static char *_ptr = _buf;
@@ -54,6 +55,9 @@ void o__ZdlPv(void* ptr) {
 }
 void o__ZdaPv(void *ptr) {
 	return o_free(ptr);
+}
+int o_setjmp(jmp_buf env) {
+	return 0;
 }
 
 #define UNIMPLEMENTED(func) \

@@ -12,7 +12,8 @@ unsafe_symbols = [
     '_ZdaPv', '_ZdlPv', '_Znam', '_Znwm',
     'fopen', 'fread', 'fwrite', 'fclose',
     'exit', 'abort',
-    'gettimeofday',
+    #'gettimeofday',
+    'setjmp', 'longjmp',
     '__stack_chk_fail',
     '__sfp_handle_exceptions',
     '__cxa_begin_catch', '__cxa_end_catch', '__cxa_rethrow', '_Unwind_Resume'
