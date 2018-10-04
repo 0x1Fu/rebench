@@ -12,17 +12,17 @@ process() {
   ../disass $2 "${@:3}" > $TMPFILE
 
   echo refining...
-  echo -e '\t'.text > $1.s
+  echo -e '\t'.text > $1
   for sym in "${@:3}"; do
     if [[ $sym == @* ]]; then
-      echo -e '\t'.global ${sym:1} >> $1.s
+      echo -e '\t'.global ${sym:1} >> $1
     fi
   done
-  echo -e '\t'.align 3 >> $1.s
-  python ../refine.py $TMPFILE >> $1.s
+  echo -e '\t'.align 3 >> $1
+  python ../refine.py $TMPFILE >> $1
 
   echo post prossing...
-  python ../post.py $1.s
+  python ../post.py $1
 
   rm $TMPFILE
 }
@@ -35,15 +35,27 @@ replace() {
   fi
 }
 
+replace_global() {
+  if [[ `uname -s` == Darwin ]]; then
+    sed -i '' "s/$2/$3/g" $1
+  else
+    sed -i "s/$2/$3/g" $1
+  fi
+}
+
 LIB=libabenchmark.so
 
-process 600_fft $LIB \
+process 600_fft.s $LIB \
   @kiss_fftr_alloc kiss_fft_alloc \
   @kiss_fftr kiss_fft L56d54-574dc
-process 601_gemm $LIB \
+
+process 601_gemm.s $LIB \
   @test_sgemm @_Z5sgemmjPfS_S_ _Z10sgemm_neonjPfS_S_ \
   @test_dgemm @_Z5dgemmjPdS_S_ _Z8gemm_optIdEvjPT_S1_S1_
-process 603_map $LIB \
+replace_global 601_gemm.s malloc o_malloc
+replace_global 601_gemm.s free o_free
+
+process 603_map.s $LIB \
   @test_map \
   _Z16test_map_orderedd \
   _Z18test_map_unorderedd \
@@ -69,7 +81,7 @@ process 603_map $LIB \
   L10f608-10f7f8 L10f928-10fe94 L129290-1294e8
 replace 603_map.s _ZN8CMapTestD1Ev: _ZN8CMapTestD1Ev _ZN8CMapTestD2Ev
 
-process 609_png $LIB \
+process 609_png.s $LIB \
   @_Z10loadMemPNGPhjP7BmpData png_create_read_struct png_create_png_struct \
   png_set_mem_fn png_set_error_fn png_user_version_check png_malloc_warn \
   png_set_read_fn png_create_info_struct png_malloc_base png_set_longjmp_fn \
@@ -88,16 +100,9 @@ process 609_png $LIB \
   png_destroy_read_struct png_destroy_info_struct png_destroy_gamma_table \
   png_zfree png_destroy_png_struct png_free_jmpbuf \
   L66b18-66b8c L7a214-7a6bc L7c010-7c118
-replace 609_png.s L66960: LC_66b18 L66b18
-replace 609_png.s L66964: LC_66b18 L66b18
-replace 609_png.s L66960: LC_66b18 L66b18
-replace 609_png.s L7f0f0: LC_7f96c L7f96c
-replace 609_png.s L7f0f4: LC_7f96c L7f96c
-replace 609_png.s L7f0f8: LC_7fa28 L7fa28
-replace 609_png.s L7f110: LC_7fa28 L7fa28
-replace 609_png.s L7f104: LC_7fd04 L7fd04
-replace 609_png.s L7f118: LC_7fd04 L7fd04
-replace 609_png.s L7f10c: LC_7fc8c L7fc8c
-replace 609_png.s L7f11c: LC_7fc8c L7fc8c
-replace 609_png.s L7f114: LC_7fab8 L7fab8
-replace 609_png.s L7f124: LC_7fab8 L7fab8
+replace_global 609_png.s LC_66b18 L66b18
+replace_global 609_png.s LC_7f96c L7f96c
+replace_global 609_png.s LC_7fa28 L7fa28
+replace_global 609_png.s LC_7fd04 L7fd04
+replace_global 609_png.s LC_7fc8c L7fc8c
+replace_global 609_png.s LC_7fab8 L7fab8

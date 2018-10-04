@@ -3,10 +3,17 @@
 adb push ./libs/arm64-v8a/ututna /data/local/tmp/
 adb shell chmod +x /data/local/tmp/ututna
 
-if [[ $# -eq 0 ]]; then
-  adb shell "cd /data/local/tmp/; ./ututna"
+while true; do
+  case "$1" in
+  --loop) loop=$2; shift 2;;
+  *) break;;
+  esac
+done
+
+if [[ ! $loop ]]; then
+  adb shell "cd /data/local/tmp/; ./ututna $@"
 else
-  for ((i=1; i<=$1; i++)); do
-    adb shell "cd /data/local/tmp/; ./ututna" | grep -v UTUTNA
+  for ((i=1; i<=$loop; i++)); do
+    adb shell "cd /data/local/tmp/; ./ututna $@" | grep -v UTUTNA
   done
 fi

@@ -96,20 +96,23 @@ double test_601_dgemm(int loops) {
 }
 
 void test_601_gemm(int loops) {
+	int loops_dgemm = loops > 1 ? loops / 2 : 1;
+
 	double sgemm = test_601_sgemm(loops);
-	double dgemm = test_601_dgemm(loops / 2);
+	double dgemm = test_601_dgemm(loops_dgemm);
 
 	double score_sgemm = (double)loops * 335.54432 / sgemm;
 	double score_dgemm = (double)loops * 335.54432 / dgemm;
 
 	print_score("601_GEMM",   score_sgemm + score_dgemm, loops, sgemm + dgemm);
 	print_score(" SGEMM", score_sgemm, loops, sgemm);
-	print_score(" DGEMM", score_dgemm, loops / 2, dgemm);
+	print_score(" DGEMM", score_dgemm, loops_dgemm, dgemm);
 }
 
 extern double test_map(int loops);
 uint64_t dummy = 0;
 static int test_map_idx = 0;
+static int loops_unordered = 0;
 static double test_map_results[2];
 typedef long (* maptest_func1_t)(void *, void *);
 typedef long (* maptest_func2_t)(void *);
@@ -121,7 +124,7 @@ double _Z15test_const_timeR8CMapTestd(void* map, double tm) {
 	int i;
 	int loops = (int)tm;
 	if (test_map_idx == 1)
-		loops *= 10;
+		loops = loops_unordered;
 
 	begin();
 	for (i=0; i<loops; i++) {
@@ -140,11 +143,12 @@ void test_603_map(int loops) {
 	heap_reset();
 
 	test_map_idx = 0;
+	loops_unordered = loops > 1 ? loops * 10 : 1;
 	double score = test_map(loops * 2) * 10000.0;
 
 	print_score("603_MAP", score, loops, test_map_results[0] + test_map_results[1]);
 	print_score(" ORDERED", 0, loops, test_map_results[0]);
-	print_score(" UNORDERED", 0, loops * 10, test_map_results[1]);
+	print_score(" UNORDERED", 0, loops_unordered, test_map_results[1]);
 }
 
 extern double _Z10loadMemPNGPhjP7BmpData(void *, int, void *);
@@ -169,10 +173,10 @@ int main(int argc, char *argv[]) {
 
 	fprintf(stderr, "UTUTNA:\n");
 	print_header();
-	if (arg1 == 0 || arg1 == 600) test_600_fft(arg2 ? arg2 : 100000);
-	if (arg1 == 0 || arg1 == 601) test_601_gemm(arg2 ? arg2 : 500);
-	if (arg1 == 0 || arg1 == 603) test_603_map(arg2 ? arg2 : 250);
-	if (arg1 == 0 || arg1 == 609) test_609_png(arg2 ? arg2 : 400);
+	if (arg1 == 0 || arg1 == 600) test_600_fft(arg2 ? arg2 : 200000);
+	if (arg1 == 0 || arg1 == 601) test_601_gemm(arg2 ? arg2 : 1000);
+	if (arg1 == 0 || arg1 == 603) test_603_map(arg2 ? arg2 : 500);
+	if (arg1 == 0 || arg1 == 609) test_609_png(arg2 ? arg2 : 1000);
 
 	return 0;
 }

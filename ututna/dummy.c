@@ -3,7 +3,7 @@
 #include <memory.h>
 #include <setjmp.h>
 
-#define MAX_MALLOC_SIZE (800 * 1024 * 1024)
+#define MAX_MALLOC_SIZE (8 * 1024 * 1024)
 
 static char _buf[MAX_MALLOC_SIZE] = { 0 };
 static char *_ptr = _buf;
