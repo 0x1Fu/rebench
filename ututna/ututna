@@ -106,3 +106,51 @@ replace_global 609_png.s LC_7fa28 L7fa28
 replace_global 609_png.s LC_7fd04 L7fd04
 replace_global 609_png.s LC_7fc8c L7fc8c
 replace_global 609_png.s LC_7fab8 L7fab8
+
+process 614_physics.s $LIB \
+  @test_physics cpSpaceNew cpSpaceInit cpBBTreeNew cpSpatialIndexInit \
+  cpHashSetNew cpArrayNew cpBBTreeSetVelocityFunc cpBodyInit cpBodySetMass \
+  cpBodyActivate cpBodyGetType cpBodySetType cpSpaceSetIterations \
+  cpSpaceUseSpatialHash cpSpaceHashNew cpHashSetEach cpSpatialIndexFree \
+  cpHashSetFree cpArrayFreeEach cpArrayFree cpBodyNew cpBodySetPosition \
+  cpCircleShapeNew cpMomentForCircle cpAreaForCircle cpShapeSetElasticity \
+  cpShapeSetFriction cpShapeGetBody cpSpaceAddBody cpArrayPush cpSpaceAddShape \
+  cpBodyAddShape cpShapeUpdate cpHashSetInsert cpArrayPop cpBodySetVelocity \
+  cpShapeSetFilter cpSpaceStep cpShapeGetBB cpBodyUpdatePosition \
+  cpSpacePushFreshContactBuffer cpShapeUpdateFunc cpShapeCacheBB \
+  cpSpaceCollideShapes cpSpatialIndexCollideStatic cpHashSetCount \
+  cpSpaceProcessComponents cpHashSetFilter cpBodyUpdateVelocity cpSpaceUnlock \
+  cpCollide cpArbiterInit cpArbiterUpdate cpHashSetFind \
+  cpSpaceArbiterSetFilter cpBodyIsSleeping cpArbiterPreStep \
+  cpArbiterApplyCachedImpulse cpArbiterApplyImpulse cpArbiterUnthread \
+  cpSpaceEachShape cpSpaceLock cpSpaceAddPostStepCallback cpSpaceRemoveShape \
+  cpBodyRemoveShape cpHashSetRemove cpShapeFree cpArrayDeleteObj \
+  cpSpaceEachConstraint cpSpaceEachBody cpSpaceRemoveBody cpBodyFree \
+  cpSpaceFree cpSpaceDestroy \
+  StartStopwatch StopStopwatch TicksToFracSecs \
+  L8b5a0-8b5c0 L8b5e0-8b624 L8b648-8b66C L8d814-8d8b0 \
+  L90058-90154 L93d88-93fd4 L9a820-9a86c L9bc4c-9bc54 \
+  L9be30-9be74 L9bc54-9bc58 L9ca0c-9cad0 L9ce84-9ce8c \
+  L9e7d4-9ea30 L9ebe0-9ed04 L9ed30-9edec L9ef2c-9f024 \
+  L9f570-9f804 L9f838-9fb88 La0cf8-a0d78
+replace_global 614_physics.s LC_8b5a0 L8b5a0
+replace_global 614_physics.s LC_8b5c0 L8b5c0
+replace_global 614_physics.s LC_8b5e0 L8b5e0
+replace_global 614_physics.s LC_8d318 L8d318
+replace_global 614_physics.s LC_8ddfc L8ddfc
+replace_global 614_physics.s LC_9be24 L9be24
+replace_global 614_physics.s LC_9be30 L9be30
+replace_global 614_physics.s LC_9be74 L9be74
+replace_global 614_physics.s LC_9d150 L9d150
+replace_global 614_physics.s LC_9ea20 L9ea20
+replace_global 614_physics.s LC_9f570 L9f570
+replace_global 614_physics.s LC_9f57c L9f57c
+replace_global 614_physics.s LC_9f838 L9f838
+replace_global 614_physics.s LC_a0cf8 La0cf8
+replace_global 614_physics.s LC_a13f4 La13f4
+replace_global 614_physics.s LC_9ce84 L9ce84
+replace_global 614_physics.s LC_8b600 L8b600
+replace_global 614_physics.s LC_a0770 La0770
+replace_global 614_physics.s LC_9ca0c L9ca0c
+replace_global 614_physics.s LC_8b648 L8b648
+replace_global 614_physics.s LC_9c194 L9c194

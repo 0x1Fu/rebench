@@ -164,7 +164,21 @@ void test_609_png(int loops) {
 		secs += _Z10loadMemPNGPhjP7BmpData(test_png, test_png_len, buf);
 
 	double score = (double)loops * 1000.0 / secs;
-	print_score("603_PNG", score, loops, secs);
+	print_score("609_PNG", score, loops, secs);
+}
+
+extern double test_physics();
+double LC_14f590;
+void test_614_physics(int loops) {
+	heap_reset();
+
+	LC_14f590 = 5.0 / loops;
+
+	double score = test_physics();
+	double secs = 60.0 / score;
+	score = loops / secs * 1000.0;
+
+	print_score("614_PHYSICS", score, loops, secs);
 }
 
 int main(int argc, char *argv[]) {
@@ -177,6 +191,7 @@ int main(int argc, char *argv[]) {
 	if (arg1 == 0 || arg1 == 601) test_601_gemm(arg2 ? arg2 : 1000);
 	if (arg1 == 0 || arg1 == 603) test_603_map(arg2 ? arg2 : 500);
 	if (arg1 == 0 || arg1 == 609) test_609_png(arg2 ? arg2 : 1000);
+	if (arg1 == 0 || arg1 == 614) test_614_physics(arg2 ? arg2 : 600);
 
 	return 0;
 }

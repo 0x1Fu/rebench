@@ -9,6 +9,7 @@ LOCAL_SRC_FILES := \
     601_gemm.s \
     603_map.s \
     609_png.s \
+    614_physics.s \
     test_png.c
 LOCAL_C_INCLUDES := #../stdlib
 LOCAL_LDFLAGS := -lz -static
