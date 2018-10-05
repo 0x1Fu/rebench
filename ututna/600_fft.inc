@@ -10,16 +10,8 @@ L14a8d8:
 	.4byte L56fe4 - L14a8d8
 	.4byte L5711c - L14a8d8
 	.4byte L57290 - L14a8d8
-L1ac730:
-	.8byte 0
-Lstack_chk_guard:
-	.8byte 0x1234567890abcdef
 
 L14a8f0:
 L14a915:
 	.string "error"
 
-	.data.rel.ro
-	.align 3
-L1acb60:
-	.8byte Lstack_chk_guard

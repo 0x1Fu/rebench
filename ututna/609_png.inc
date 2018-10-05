@@ -72,8 +72,6 @@ L14df6c:
 	.8byte 0xF0F0F0FFF00FF00
 	.8byte 0xFFFF000033333333
 	.8byte 0xF0F0F0FFF00FF00
-Lstack_chk_guard:
-	.8byte 0x1234567890abcdef
 
 L14a59e:
 	.string "1.2.3"
@@ -226,8 +224,6 @@ L1ac650:
 	.8byte png_zfree
 L1ac6b0:
 	.8byte o_unimplemented
-L1ac730:
-	.8byte o_unimplemented
 L1ac908:
 	.8byte png_read_filter_row_paeth3_neon
 L1aca38:
@@ -238,8 +234,6 @@ L1acaa8:
 	.8byte o_unimplemented
 L1acb48:
 	.8byte o_unimplemented
-L1acb60:
-	.8byte Lstack_chk_guard
 L1acc70:
 	.8byte o_unimplemented
 L1acd48:

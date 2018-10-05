@@ -7,9 +7,6 @@ L148bf0:
 L159170:
 	.include "L159170.s"
 
-Lstack_chk_guard:
-	.8byte 0x1234567890abcdef
-
 	.align 4
 L159b00:
 	.8byte 0x707050503020202
@@ -101,8 +98,6 @@ L1ac430:
 	.8byte dummy
 L1ac8e8:
 	.8byte vtable_1a6e98
-L1acb60:
-	.8byte Lstack_chk_guard
 L1acea8:
 	.8byte vtable_CMapTest
 L1acee8:

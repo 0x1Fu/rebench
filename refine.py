@@ -8,7 +8,7 @@ lineno = 0
 symbols = []
 local_symbols = []
 unsafe_symbols = [
-    #'malloc', 'free',
+    #'malloc', 'free', 'calloc',
     #'_ZdaPv', '_ZdlPv', '_Znam', '_Znwm',
     'fopen', 'fread', 'fwrite', 'fclose',
     'exit', 'abort',

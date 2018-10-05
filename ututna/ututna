@@ -127,3 +127,10 @@ process 614_physics.s $LIB \
   L9be30-9be74 L9bc54-9bc58 L9ca0c-9cad0 L9ce84-9ce8c \
   L9e7d4-9ea30 L9ebe0-9ed04 L9ed30-9edec L9ef2c-9f024 \
   L9f570-9f804 L9f838-9fb88 La0cf8-a0d78
+
+process 607_hash.s $LIB \
+  @generate_test_data encryption_data av_aes_init av_aes_crypt \
+  @md5_sum_data av_md5_sum av_md5_update \
+  @sha1_sum_data @sha2_sum_data av_sha_init av_sha_update av_sha_final \
+  @crc_sum_data calc_buffer_crc \
+  L4c208-4c464 L4d10c-4e064

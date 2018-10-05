@@ -26,8 +26,6 @@ L14f598:
 	.8byte 0x4082C00000000000
 L14f8e8:
 	.8byte 0x400921FB54442D18
-Lstack_chk_guard:
-	.8byte 0x1234567890abcdef
 
 	.align 4
 L14fa70:
@@ -128,8 +126,6 @@ L1acd28:
 	.8byte cpBodyUpdatePosition
 L1acf50:
 	.8byte cpSpaceArbiterSetFilter
-L1acb60:
-	.8byte Lstack_chk_guard
 L1acfc8:
 	.8byte cpShapeUpdateFunc
 

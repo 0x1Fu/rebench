@@ -22,10 +22,3 @@ L14a950:
 	.8byte 0x100000000
 L14a958:
 	.8byte 0x300000002
-Lstack_chk_guard:
-	.8byte 0x1234567890abcdef
-
-	.data.rel.ro
-	.align 3
-L1acb60:
-	.8byte Lstack_chk_guard

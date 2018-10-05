@@ -169,6 +169,7 @@ void test_609_png(int loops) {
 
 extern double test_physics();
 double L14f590;
+
 void test_614_physics(int loops) {
 	heap_reset();
 
@@ -179,6 +180,35 @@ void test_614_physics(int loops) {
 	score = loops / secs * 1000.0;
 
 	print_score("614_PHYSICS", score, loops, secs);
+}
+
+extern void *generate_test_data(int a);
+extern int md5_sum_data(void *, int, void *);
+extern int sha1_sum_data(void *, int, void *);
+extern int sha2_sum_data(void *, int, void *);
+extern int crc_sum_data(void *, int, void *);
+
+void test_607_hash(int loops) {
+	heap_reset();
+
+	void *data = generate_test_data(0x5000);
+	char buf[128] = {0};
+
+	begin();
+	int i;
+	for (i=0; i<loops; i++) {
+		if ( md5_sum_data(data, 0x5000, buf) ||
+			sha1_sum_data(data, 0x5000, buf) ||
+			sha2_sum_data(data, 0x5000, buf) ||
+			 crc_sum_data(data, 0x5000, buf))
+			break;
+	}
+	double secs = end();
+
+	double score = (i == loops ? (double)loops * 6 / secs : 0);
+	print_score("607_HASH", score, loops, secs);
+
+	free(data);
 }
 
 int main(int argc, char *argv[]) {
@@ -192,6 +222,7 @@ int main(int argc, char *argv[]) {
 	if (arg1 == 0 || arg1 == 603) test_603_map(arg2 ? arg2 : 500);
 	if (arg1 == 0 || arg1 == 609) test_609_png(arg2 ? arg2 : 1000);
 	if (arg1 == 0 || arg1 == 614) test_614_physics(arg2 ? arg2 : 600);
+	if (arg1 == 0 || arg1 == 607) test_607_hash(arg2 ? arg2 : 5000);
 
 	return 0;
 }
