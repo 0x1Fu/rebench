@@ -1,22 +1,22 @@
 	.text
 	.align 3
 
-LC_148bf0:
+L148bf0:
 	.8byte 0x412E848000000000
 
-LC_159170:
-	.include "LC_159170.s"
+L159170:
+	.include "L159170.s"
 
-LC_stack_chk_guard:
+Lstack_chk_guard:
 	.8byte 0x1234567890abcdef
 
 	.align 4
-LC_159b00:
+L159b00:
 	.8byte 0x707050503020202
 	.8byte 0xB0B0B0B
 
 	.align 1
-LC_15b330:
+L15b330:
 	.2byte 0xC0
 	.2byte 0x166
 	.2byte 0
@@ -35,7 +35,7 @@ LC_15b330:
 	.2byte 0
 
 	.align 1
-LC_15b350:
+L15b350:
 	.2byte 2
 	.2byte 2
 	.2byte 0x6C
@@ -97,13 +97,13 @@ vtable_1a6e98:
 	.8byte o_unimplemented
 	.8byte 0
 
-LC_1ac430:
+L1ac430:
 	.8byte dummy
-LC_1ac8e8:
+L1ac8e8:
 	.8byte vtable_1a6e98
-LC_1acb60:
-	.8byte LC_stack_chk_guard
-LC_1acea8:
+L1acb60:
+	.8byte Lstack_chk_guard
+L1acea8:
 	.8byte vtable_CMapTest
-LC_1acee8:
+L1acee8:
 	.8byte vtable_CMapTestImp

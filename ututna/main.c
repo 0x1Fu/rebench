@@ -168,11 +168,11 @@ void test_609_png(int loops) {
 }
 
 extern double test_physics();
-double LC_14f590;
+double L14f590;
 void test_614_physics(int loops) {
 	heap_reset();
 
-	LC_14f590 = 5.0 / loops;
+	L14f590 = 5.0 / loops;
 
 	double score = test_physics();
 	double secs = 60.0 / score;

@@ -100,12 +100,6 @@ process 609_png.s $LIB \
   png_destroy_read_struct png_destroy_info_struct png_destroy_gamma_table \
   png_zfree png_destroy_png_struct png_free_jmpbuf \
   L66b18-66b8c L7a214-7a6bc L7c010-7c118
-replace_global 609_png.s LC_66b18 L66b18
-replace_global 609_png.s LC_7f96c L7f96c
-replace_global 609_png.s LC_7fa28 L7fa28
-replace_global 609_png.s LC_7fd04 L7fd04
-replace_global 609_png.s LC_7fc8c L7fc8c
-replace_global 609_png.s LC_7fab8 L7fab8
 
 process 614_physics.s $LIB \
   @test_physics cpSpaceNew cpSpaceInit cpBBTreeNew cpSpatialIndexInit \
@@ -133,24 +127,3 @@ process 614_physics.s $LIB \
   L9be30-9be74 L9bc54-9bc58 L9ca0c-9cad0 L9ce84-9ce8c \
   L9e7d4-9ea30 L9ebe0-9ed04 L9ed30-9edec L9ef2c-9f024 \
   L9f570-9f804 L9f838-9fb88 La0cf8-a0d78
-replace_global 614_physics.s LC_8b5a0 L8b5a0
-replace_global 614_physics.s LC_8b5c0 L8b5c0
-replace_global 614_physics.s LC_8b5e0 L8b5e0
-replace_global 614_physics.s LC_8d318 L8d318
-replace_global 614_physics.s LC_8ddfc L8ddfc
-replace_global 614_physics.s LC_9be24 L9be24
-replace_global 614_physics.s LC_9be30 L9be30
-replace_global 614_physics.s LC_9be74 L9be74
-replace_global 614_physics.s LC_9d150 L9d150
-replace_global 614_physics.s LC_9ea20 L9ea20
-replace_global 614_physics.s LC_9f570 L9f570
-replace_global 614_physics.s LC_9f57c L9f57c
-replace_global 614_physics.s LC_9f838 L9f838
-replace_global 614_physics.s LC_a0cf8 La0cf8
-replace_global 614_physics.s LC_a13f4 La13f4
-replace_global 614_physics.s LC_9ce84 L9ce84
-replace_global 614_physics.s LC_8b600 L8b600
-replace_global 614_physics.s LC_a0770 La0770
-replace_global 614_physics.s LC_9ca0c L9ca0c
-replace_global 614_physics.s LC_8b648 L8b648
-replace_global 614_physics.s LC_9c194 L9c194

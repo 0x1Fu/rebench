@@ -33,7 +33,7 @@ while True:
         reg = mo.group('reg2')
         if reg in tmp:
             local = {}
-            addr = "LC_{:x}".format(int(tmp[reg]['addr'], 16) + int(mo.group('offset'), 16))
+            addr = "L{:x}".format(int(tmp[reg]['addr'], 16) + int(mo.group('offset'), 16))
             s = "/^L{}:/s/?{}/{}/".format(tmp[reg]['label'], tmp[reg]['addr'], addr)
             replaces.append(s)
             s = "/^L{}:/s/\#0x{}/\#:lo12:{}/".format(mo.group('label'), mo.group('offset'), addr)
@@ -49,7 +49,7 @@ while True:
         reg = mo.group('reg2')
         if reg in tmp:
             local = {}
-            addr = "LC_{:x}".format(int(tmp[reg]['addr'], 16) + int(mo.group('offset')))
+            addr = "L{:x}".format(int(tmp[reg]['addr'], 16) + int(mo.group('offset')))
             s = "/^L{}:/s/?{}/{}/".format(tmp[reg]['label'], tmp[reg]['addr'], addr)
             replaces.append(s)
             s = "/^L{}:/s/\#{}/\#:lo12:{}/".format(mo.group('label'), mo.group('offset'), addr)
@@ -60,7 +60,7 @@ while True:
         reg = mo.group('reg2')
         if reg in tmp:
             local = {}
-            addr = "LC_{:x}".format(int(tmp[reg]['addr'], 16))
+            addr = "L{:x}".format(int(tmp[reg]['addr'], 16))
             s = "/^L{}:/s/?{}/{}/".format(tmp[reg]['label'], tmp[reg]['addr'], addr)
             replaces.append(s)
             del tmp[reg]
