@@ -66,8 +66,11 @@ while True:
             del tmp[reg]
 
 for s in replaces:
-    cmd = "sed -i '' {} {}".format(s, file)
-    os.system("sed -i '' {} {}".format(s, file))
+    if sys.platform == 'darwin':
+        cmd = "sed -i '' {} {}".format(s, file)
+    else:
+        cmd = "sed -i {} {}".format(s, file)
+    os.system(cmd)
 
 with open(file,'ab') as f:
     f.write('\r.include "{}"\r'.format(file.replace(".s", ".inc")))
