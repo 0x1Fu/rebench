@@ -55,7 +55,7 @@ L4b790:
 L1283f0:
 	bl o_unimplemented
 
-	.data.rel.ro
+	.section .data.rel.ro
 	.align 3
 
 // 1a6de8

@@ -108,7 +108,7 @@ cpMessage:
 cpSpaceActivateBody:
 	bl o_unimplemented
 
-	.data.rel.ro
+	.section .data.rel.ro
 	.align 3
 L1ac3e0:
 	.8byte cpSpaceCollideShapes

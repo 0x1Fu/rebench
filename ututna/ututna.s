@@ -3,7 +3,7 @@
 Lstack_chk_guard:
 	.8byte 0x1234567890abcdef
 
-	.data.rel.ro
+	.section .data.rel.ro
 	.align 3
 	.global L1acb60
 	.global L1ac730

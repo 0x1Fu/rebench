@@ -14,4 +14,4 @@ L14a8d8:
 L14a8f0:
 L14a915:
 	.string "error"
-
+	.align 3

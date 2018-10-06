@@ -216,7 +216,7 @@ png_warning:
 png_zstream_error:
 	bl o_unimplemented
 
-	.data.rel.ro
+	.section .data.rel.ro
 	.align 3
 L1ac508:
 	.8byte o_unimplemented
