@@ -11,9 +11,9 @@ while true; do
 done
 
 if [[ ! $loop ]]; then
-  adb shell "cd /data/local/tmp/; ./ututna $@"
+  adb shell "cd /data/local/tmp/; taskset 80 ./ututna $@"
 else
   for ((i=1; i<=$loop; i++)); do
-    adb shell "cd /data/local/tmp/; ./ututna $@" | grep -v UTUTNA
+    adb shell "cd /data/local/tmp/; taskset 80 ./ututna $@"
   done
 fi

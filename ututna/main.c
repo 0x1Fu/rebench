@@ -2,9 +2,6 @@
 #include <stdlib.h>
 #include <sys/time.h>
 
-extern char *heap_start();
-extern void heap_reset();
-
 static struct timeval start;
 
 void begin() {
@@ -35,8 +32,6 @@ extern void *kiss_fftr_alloc(int, int, char*, char*);
 extern void kiss_fftr(void*, char*, char*);
 
 void test_600_fft(int loops) {
-	heap_reset();
-
 	char timedata[0x2000] = { 0 };
 	char freqdata[0x2000] = { 0 };
 
@@ -51,25 +46,45 @@ void test_600_fft(int loops) {
 	print_score("600_FFT", score, loops, secs);
 }
 
+static void *gemm_ptrs[3] = {0};
+static int gemm_idx = 0;
+
+void* gemm_malloc(size_t size) {
+	if (gemm_idx >= 3) {
+		fprintf(stderr, "gemm_malloc error.\n");
+		exit(-1);
+	}
+
+	void *ptr = malloc(size);
+	gemm_ptrs[gemm_idx++] = ptr;
+
+	return ptr;
+}
+
+void gemm_free(void* ptr) {
+}
+
+void gemm_cleanup() {
+	for (int i=0; i<3; i++) {
+		free(gemm_ptrs[i]);
+		gemm_ptrs[i] = NULL;
+	}
+	gemm_idx = 0;
+}
+
 extern double test_sgemm(unsigned long long, double);
 extern int _Z5sgemmjPfS_S_(unsigned int, void*, void*, void*);
 
 double test_601_sgemm(int loops) {
-	heap_reset();
-
 	double result = test_sgemm(1, 1.0);
 	if (result != -1) {
 		fprintf(stderr, "sgemm error.\n");
 		return 0;
 	}
 
-	char *p1 = heap_start();
-	char *p2 = p1 + 0x40000;
-	char *p3 = p2 + 0x40000;
-
 	begin();
 	for (int i=0; i<loops; i++)
-		_Z5sgemmjPfS_S_(0x100u, p1, p2, p3);
+		_Z5sgemmjPfS_S_(0x100u, gemm_ptrs[0], gemm_ptrs[1], gemm_ptrs[2]);
 	return end();
 }
 
@@ -77,21 +92,16 @@ extern double test_dgemm(unsigned long long, double);
 extern int _Z5dgemmjPdS_S_(unsigned int, void*, void*, void*);
 
 double test_601_dgemm(int loops) {
-	heap_reset();
-
 	double result = test_dgemm(1, 1.0);
 	if (result != -1) {
 		fprintf(stderr, "dgemm error.\n");
 		return 0;
 	}
 
-	char *p1 = heap_start();
-	char *p2 = p1 + 0x80000;
-	char *p3 = p2 + 0x80000;
-
 	begin();
-	for (int i=0; i<loops; i++)
-		_Z5dgemmjPdS_S_(0x100u, p1, p2, p3);
+	for (int i=0; i<loops; i++) {
+		_Z5dgemmjPdS_S_(0x100u, gemm_ptrs[0], gemm_ptrs[1], gemm_ptrs[2]);
+	}
 	return end();
 }
 
@@ -99,12 +109,14 @@ void test_601_gemm(int loops) {
 	int loops_dgemm = loops > 1 ? loops / 2 : 1;
 
 	double sgemm = test_601_sgemm(loops);
+	gemm_cleanup();
 	double dgemm = test_601_dgemm(loops_dgemm);
+	gemm_cleanup();
 
 	double score_sgemm = (double)loops * 335.54432 / sgemm;
-	double score_dgemm = (double)loops * 335.54432 / dgemm;
+	double score_dgemm = (double)loops_dgemm * 335.54432 / dgemm;
 
-	print_score("601_GEMM",   score_sgemm + score_dgemm, loops, sgemm + dgemm);
+	print_score("601_GEMM", score_sgemm + score_dgemm, loops, sgemm + dgemm);
 	print_score(" SGEMM", score_sgemm, loops, sgemm);
 	print_score(" DGEMM", score_dgemm, loops_dgemm, dgemm);
 }
@@ -140,8 +152,6 @@ double _Z15test_const_timeR8CMapTestd(void* map, double tm) {
 }
 
 void test_603_map(int loops) {
-	heap_reset();
-
 	test_map_idx = 0;
 	loops_unordered = loops > 1 ? loops * 10 : 1;
 	double score = test_map(loops * 2) * 10000.0;
@@ -156,8 +166,6 @@ extern unsigned char test_png[];
 extern unsigned int test_png_len;
 
 void test_609_png(int loops) {
-	heap_reset();
-
 	char buf[128] = { 0 };
 	double secs = 0;
 	for (int i=0; i<loops; i++)
@@ -171,8 +179,6 @@ extern double test_physics();
 double L14f590;
 
 void test_614_physics(int loops) {
-	heap_reset();
-
 	L14f590 = 5.0 / loops;
 
 	double score = test_physics();
@@ -182,15 +188,13 @@ void test_614_physics(int loops) {
 	print_score("614_PHYSICS", score, loops, secs);
 }
 
-extern void *generate_test_data(int a);
+extern void *generate_test_data(int);
 extern int md5_sum_data(void *, int, void *);
 extern int sha1_sum_data(void *, int, void *);
 extern int sha2_sum_data(void *, int, void *);
 extern int crc_sum_data(void *, int, void *);
 
 void test_607_hash(int loops) {
-	heap_reset();
-
 	void *data = generate_test_data(0x5000);
 	char buf[128] = {0};
 

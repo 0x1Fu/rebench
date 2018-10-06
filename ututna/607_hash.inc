@@ -123,4 +123,4 @@ L1af4d4:
 L1ae2d4:
 	.ds.b 0x100
 L1af3d4:
-    .ds.b 0x100
+	.ds.b 0x100

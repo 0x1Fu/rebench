@@ -52,8 +52,8 @@ process 600_fft.s $LIB \
 process 601_gemm.s $LIB \
   @test_sgemm @_Z5sgemmjPfS_S_ _Z10sgemm_neonjPfS_S_ \
   @test_dgemm @_Z5dgemmjPdS_S_ _Z8gemm_optIdEvjPT_S1_S1_
-replace_global 601_gemm.s malloc o_malloc
-replace_global 601_gemm.s free o_free
+replace_global 601_gemm.s malloc gemm_malloc
+replace_global 601_gemm.s free gemm_free
 
 process 603_map.s $LIB \
   @test_map \
