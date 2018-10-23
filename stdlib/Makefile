@@ -13,8 +13,9 @@ all: build
 	@echo done
 
 build:
+	@./extract
 	@ndk-build $(NDK_BUILD_PARAMS) V=0
-	./stdlib
+	@./stdlib
 
 clean:
 	@ndk-build clean $(NDK_BUILD_PARAMS)
