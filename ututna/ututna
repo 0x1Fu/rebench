@@ -3,7 +3,10 @@
 [ -z "$ANDROID_NDK_HOME" ] && echo "ANDROID_NDK_HOME is not set" && exit 1
 [ ! -f libabenchmark.so ] && echo "libabenchmark.so is missing" && exit 1
 
-TMPFILE=~tmp.s
+OUT=out
+[ ! -d $OUT ] && mkdir $OUT
+
+TMPFILE=$OUT/~tmp.s
 
 process() {
   echo --- $1 ---
@@ -12,34 +15,34 @@ process() {
   ../disass $2 "${@:3}" > $TMPFILE
 
   echo refining...
-  echo -e '\t'.text > $1
+  echo -e '\t'.text > $OUT/$1
   for sym in "${@:3}"; do
     if [[ $sym == @* ]]; then
-      echo -e '\t'.global ${sym:1} >> $1
+      echo -e '\t'.global ${sym:1} >> $OUT/$1
     fi
   done
-  echo -e '\t'.align 3 >> $1
-  python ../refine.py $TMPFILE >> $1
+  echo -e '\t'.align 3 >> $OUT/$1
+  python ../refine.py $TMPFILE >> $OUT/$1
 
   echo post prossing...
-  python ../post.py $1
+  python ../post.py $OUT/$1
 
   rm $TMPFILE
 }
 
 replace() {
   if [[ `uname -s` == Darwin ]]; then
-    sed -i '' "/^$2/s/$3/$4/" $1
+    sed -i '' "/^$2/s/$3/$4/" $OUT/$1
   else
-    sed -i "/^$2/s/$3/$4/" $1
+    sed -i "/^$2/s/$3/$4/" $OUT/$1
   fi
 }
 
 replace_global() {
   if [[ `uname -s` == Darwin ]]; then
-    sed -i '' "s/$2/$3/g" $1
+    sed -i '' "s/$2/$3/g" $OUT/$1
   else
-    sed -i "s/$2/$3/g" $1
+    sed -i "s/$2/$3/g" $OUT/$1
   fi
 }
 
@@ -52,8 +55,8 @@ process 600_fft.s $LIB \
 process 601_gemm.s $LIB \
   @test_sgemm @_Z5sgemmjPfS_S_ _Z10sgemm_neonjPfS_S_ \
   @test_dgemm @_Z5dgemmjPdS_S_ _Z8gemm_optIdEvjPT_S1_S1_
-replace_global 601_gemm.s malloc gemm_malloc
-replace_global 601_gemm.s free gemm_free
+replace_global 601_gemm.s s_malloc gemm_malloc
+replace_global 601_gemm.s s_free gemm_free
 
 process 603_map.s $LIB \
   @test_map \

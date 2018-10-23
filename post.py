@@ -73,4 +73,4 @@ for s in replaces:
     os.system(cmd)
 
 with open(file,'ab') as f:
-    f.write('\n.include "{}"\n'.format(file.replace(".s", ".inc")))
+    f.write('\n.include "{}"\n'.format(os.path.basename(file).replace(".s", ".inc")))

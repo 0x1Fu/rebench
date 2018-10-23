@@ -1,0 +1,59 @@
+#!/bin/bash
+
+objcopy=$(../ndk-which --abi arm64-v8a objcopy)
+objdump=$(../ndk-which --abi arm64-v8a objdump)
+
+OUT=out
+[ ! -d $OUT ] && mkdir $OUT
+
+process() {
+  elf=obj/local/arm64-v8a/$LIB.elf
+  bin=$LIB.bin
+  obj=$LIB.o
+
+  $objcopy -O binary $elf $OUT/$bin
+  cd $OUT
+  $objcopy -I binary -O elf64-littleaarch64 -B aarch64 --rename-section .data=.rodata,alloc,load,readonly,data,contents $bin $obj
+  cd ..
+  $objdump -t $OUT/$obj
+
+  ../reloc $elf > $OUT/"$LIB"_reloc.h
+
+  echo >> $OUT/"$LIB"_reloc.h
+  for sym in ${@}
+  do
+    addr=`$objdump -t $elf | grep -w $sym | grep -w F | awk '{print $1}'`
+	printf "uint64_t %s_ptr = 0x%s + LIB_START;\n" $sym $addr >> $OUT/$LIB"_reloc.h"
+  done
+
+  cat >> $OUT/$LIB"_reloc.h" << EOF
+
+void
+reloc(uint64_t bin_start, uint64_t bin_size,
+	  uint64_t addr, uint64_t size,
+	  uint64_t rom_start,
+	  uint64_t text_start, uint64_t text_size,
+	  uint64_t bss_start, uint64_t bss_size,
+	  const struct entry *relocs);
+
+void ${LIB}_init()
+{
+	reloc((uint64_t)_binary_${LIB}_bin_start, (uint64_t)_binary_${LIB}_bin_size,
+		  LIB_START, LIB_SIZE,
+		  ROM_START,
+		  TEXT_START, TEXT_SIZE,
+		  BSS_START, BSS_SIZE,
+		  &relocs[0]);
+}
+EOF
+}
+
+LIB=stdlib
+process \
+  memset memcpy memcmp memmove \
+  strncmp strcmp strchr strlen strtol \
+  sin cos pow sqrt \
+  crc32 inflate inflateEnd inflateInit_ inflateReset \
+  sprintf fprintf fputc
+LIB=jemalloc
+process  je_malloc je_calloc je_realloc je_free

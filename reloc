@@ -1,0 +1,78 @@
+#!/bin/bash
+
+path=$(cd `dirname $0`; pwd)
+readelf=$($path/ndk-which --abi arm64-v8a readelf)
+
+#Section Headers:
+#  [Nr] Name              Type            Address          Off    Size   ES Flg Lk Inf Al
+#  [ 0]                   NULL            0000000000000000 000000 000000 00      0   0  0
+#  [ 1] .interp           PROGBITS        0000000041000000 010000 000015 00   A  0   0  1
+#  [ 8] .rela.dyn         RELA            00000000410007f8 0107f8 002508 18   A  4   0  8
+#  [ 9] .rela.plt         RELA            0000000041002d00 012d00 000360 18  AI  4  18  8
+#  [10] .plt              PROGBITS        0000000041003060 013060 000260 10  AX  0   0 16
+#  [11] .text             PROGBITS        00000000410032c0 0132c0 0250d8 00  AX  0   0  4
+
+process_sections() {
+  echo "/*"
+  $readelf --sections --wide $1
+  echo " */"
+
+  ROM_START=`$readelf --sections --wide obj/local/arm64-v8a/jemalloc.elf | grep "\[ 1" | awk '{print $5}'`
+  echo "#define ROM_START  0x"$ROM_START
+
+  $readelf --sections --wide $1 | while read line
+  do
+    arr=(${line})
+    if [[ ${arr[1]} = ".text" ]]; then
+      echo "#define TEXT_START 0x"${arr[3]}
+      echo "#define TEXT_SIZE  0x"${arr[5]}
+    elif [[ ${arr[1]} = ".bss" ]]; then
+      echo "#define BSS_START  0x"${arr[3]}
+      echo "#define BSS_SIZE   0x"${arr[5]}
+    fi
+  done
+}
+
+#
+#     Offset             Info             Type               Symbol's Value  Symbol's Name + Addend
+# 0000000041101c80  0000000600000402 R_AARCH64_JUMP_SLOT    0000000000000000 pthread_atfork@LIBC + 0
+# 0000000041101c88  0000000700000402 R_AARCH64_JUMP_SLOT    0000000000000000 pthread_key_create@LIBC + 0
+# 0000000041101fd0  0000000000000403 R_AARCH64_RELATIVE                        41029073
+# 0000000041101db8  0000000000000403 R_AARCH64_RELATIVE                        41029f40
+# 0000000041101dd0  0000000800000401 R_AARCH64_GLOB_DAT     0000000000000000 stderr@LIBC + 0
+
+process_relocs() {
+  echo "/*"
+  $readelf --relocs --wide $1
+  echo " */"
+  echo
+  echo "struct entry {"
+  echo "    uint64_t offset;"
+  echo "    uint64_t addr;"
+  echo "    uint64_t type;"
+  echo "} static const relocs[] = {"
+
+  $readelf --relocs --wide $1 | while read line
+  do
+    arr=(${line})
+    if [[ ${arr[2]} = "R_AARCH64_JUMP_SLOT" ]]; then
+      symbol=${arr[4]}
+      echo "    { 0x"${arr[0]}", (uint64_t)s_"${symbol%@*}", R_AARCH64_JUMP_SLOT },"
+    elif [[ ${arr[2]} = "R_AARCH64_RELATIVE" ]]; then
+      addr=${arr[3]}
+      echo "    { 0x"${arr[0]}", 0x"$addr", R_AARCH64_RELATIVE },"
+    elif [[ ${arr[2]} = "R_AARCH64_GLOB_DAT" ]]; then
+      symbol=${arr[4]}
+      echo "    { 0x"${arr[0]}", (uint64_t)s_"${symbol%@*}", R_AARCH64_GLOB_DAT },"
+    fi
+  done
+
+  echo "    { 0, 0 }"
+  echo "};"
+}
+
+echo "#include <elf.h>"
+echo
+
+process_sections $1
+process_relocs $1

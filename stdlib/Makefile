@@ -9,13 +9,15 @@ SHELL = /bin/bash
 
 NDK_BUILD_PARAMS := NDK_PROJECT_PATH=. NDK_APPLICATION_MK=Application.mk
 
-all: bins
+all: build
 	@echo done
 
-bins:
+build:
 	@ndk-build $(NDK_BUILD_PARAMS) V=0
+	./stdlib
 
 clean:
 	@ndk-build clean $(NDK_BUILD_PARAMS)
+	rm out/*
 
 .PHONY: all

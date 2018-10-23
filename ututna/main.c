@@ -1,6 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <memory.h>
 #include <sys/time.h>
+
+#include "jemalloc.h"
+#include "stdlib_.h"
 
 static struct timeval start;
 
@@ -49,13 +53,16 @@ void test_600_fft(int loops) {
 static void *gemm_ptrs[3] = {0};
 static int gemm_idx = 0;
 
+void *s_malloc(size_t size);
+void s_free(void *ptr);
+
 void* gemm_malloc(size_t size) {
 	if (gemm_idx >= 3) {
 		fprintf(stderr, "gemm_malloc error.\n");
 		exit(-1);
 	}
 
-	void *ptr = malloc(size);
+	void *ptr = s_malloc(size);
 	gemm_ptrs[gemm_idx++] = ptr;
 
 	return ptr;
@@ -66,7 +73,7 @@ void gemm_free(void* ptr) {
 
 void gemm_cleanup() {
 	for (int i=0; i<3; i++) {
-		free(gemm_ptrs[i]);
+		s_free(gemm_ptrs[i]);
 		gemm_ptrs[i] = NULL;
 	}
 	gemm_idx = 0;
@@ -212,21 +219,27 @@ void test_607_hash(int loops) {
 	double score = (i == loops ? (double)loops * 6 / secs : 0);
 	print_score("607_HASH", score, loops, secs);
 
-	free(data);
+	s_free(data);
 }
 
 int main(int argc, char *argv[]) {
 	int arg1 = argc > 1 ? atoi(argv[1]) : 0;
 	int arg2 = argc > 2 ? atoi(argv[2]) : 0;
 
+	jemalloc_init();
+	stdlib_init();
+
 	fprintf(stderr, "UTUTNA:\n");
 	print_header();
+
 	if (arg1 == 0 || arg1 == 600) test_600_fft(arg2 ? arg2 : 200000);
 	if (arg1 == 0 || arg1 == 601) test_601_gemm(arg2 ? arg2 : 1000);
 	if (arg1 == 0 || arg1 == 603) test_603_map(arg2 ? arg2 : 500);
 	if (arg1 == 0 || arg1 == 609) test_609_png(arg2 ? arg2 : 1000);
 	if (arg1 == 0 || arg1 == 614) test_614_physics(arg2 ? arg2 : 600);
 	if (arg1 == 0 || arg1 == 607) test_607_hash(arg2 ? arg2 : 5000);
+
+	if (arg1 == 1000) stdlib_test();
 
 	return 0;
 }

@@ -8,8 +8,6 @@ lineno = 0
 symbols = []
 local_symbols = []
 unsafe_symbols = [
-    #'malloc', 'free', 'calloc',
-    #'_ZdaPv', '_ZdlPv', '_Znam', '_Znwm',
     'fopen', 'fread', 'fwrite', 'fclose',
     'exit', 'abort',
     #'gettimeofday',
@@ -19,7 +17,12 @@ unsafe_symbols = [
     '__cxa_begin_catch', '__cxa_end_catch', '__cxa_rethrow', '_Unwind_Resume'
 ]
 static_symbols = [
-    # 'memset', 'memcpy', 'sin', 'cos', 'sqrt', 'pow'
+    'malloc', 'free', 'calloc', 'realloc',
+    '_ZdaPv', '_ZdlPv', '_Znam', '_Znwm',
+    'memset', 'memcpy', 'memcmp', 'memmove',
+    'sin', 'cos', 'sqrt', 'pow',
+    'crc32', 'inflate', 'inflateEnd', 'inflateInit_', 'inflateReset',
+    'sprintf', 'fprintf', 'fputc'
 ]
 
 ADDR = "(?P<addr>[0-9A-Fa-f]+)"
