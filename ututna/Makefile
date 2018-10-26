@@ -9,13 +9,17 @@ SHELL = /bin/bash
 
 NDK_BUILD_PARAMS := NDK_PROJECT_PATH=. NDK_APPLICATION_MK=Application.mk
 
-all: bins
+all: android
 	@echo done
 
-bins:
+android:
 	@ndk-build $(NDK_BUILD_PARAMS) V=0
+
+semi:
+	@make -f Makefile.semi
 
 clean:
 	@ndk-build clean $(NDK_BUILD_PARAMS)
+	@make -f Makefile.semi clean
 
 .PHONY: all

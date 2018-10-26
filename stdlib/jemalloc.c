@@ -2,7 +2,11 @@
 #include <stdio.h>
 #include <memory.h>
 #include <unistd.h>
+#include <time.h>
+
+#ifndef SEMIHOSTING
 #include <sys/mman.h>
+#endif
 
 #include <errno.h>
 #include <pthread.h>
@@ -25,11 +29,15 @@ extern const char _binary_jemalloc_bin_start[];
 extern const char _binary_jemalloc_bin_end[];
 extern const char _binary_jemalloc_bin_size[];
 
-void o_unimplemented();
-
 #define DUMMY(func) \
 int func() { \
 	return 0; \
+}
+
+#define UNIMPLEMENTED(func) \
+static void func() { \
+	fprintf(stderr, "[jemalloc] unimplemented: %s\n", __func__); \
+	exit(-1); \
 }
 
 DUMMY(s_pthread_atfork)
@@ -84,40 +92,61 @@ static long s_sysconf(int name) {
 	/* _SC_NPROCESSORS_ONLN */
 	return 1;
 }
+
+#ifdef SEMIHOSTING
+char *_sbrk(int incr);
+#endif
+
 static void *s_mmap(void *addr, size_t len, int prot, int flags, int fd, off_t off) {
+#ifndef SEMIHOSTING
 	void *ptr = mmap(addr, len, prot, flags, fd, off);
+#else
+	void *ptr = _sbrk(len);
+#endif
 	debug("mmap: addr=%p, len=%ld, prot=%d, flags=%d, fd=%d, off=%ld, ret=%p\n",
 		  addr, len, prot, flags, fd, off, ptr);
 	return ptr;
 }
 static int s_madvise(caddr_t addr, size_t len, int advice) {
 	/* MADV_DONTNEED */
+#ifndef SEMIHOSTING
 	debug("madvise: addr=%p, len=%ld, advice=%d\n",
 		  addr, len, advice);
 	return madvise(addr, len, advice);
+#else
+	return 0;
+#endif
 }
 
-#define s_strlen   strlen
-#define s_strchr   strchr
-#define s_strtol   strtol
-#define s_strcmp   strcmp
-#define s_strncmp  strncmp
-#define s_memcpy   memcpy
-#define s_memcmp   memcmp
-#define s_memset   memset
-#define s_memmove  memmove
-#define s_munmap   o_unimplemented
-#define s_write    o_unimplemented
-#define s_fprintf  o_unimplemented
+size_t s_strlen(const char *s);
+char *s_strchr(const char *s, int c);
+long int s_strtol(const char *nptr, char **endptr, int base);
+int s_strcmp(const char *s1, const char *s2);
+int s_strncmp(const char *s1, const char *s2, size_t n);
+void *s_memcpy(void *dest, const void *src, size_t n);
+int s_memcmp(const void *s1, const void *s2, size_t n);
+void *s_memset(void *s, int c, size_t n);
+void *s_memmove(void *dest, const void *src, size_t n);
+#ifdef SEMIHOSTING
+DUMMY(s_munmap)
+#else
+UNIMPLEMENTED(s_munmap)
+#endif
+UNIMPLEMENTED(s_write)
 
+#ifdef SEMIHOSTING
+int clock_gettime(clockid_t clk_id,struct timespec *tp) {
+	tp->tv_sec = 0;
+	tp->tv_nsec = 0;
+	return 0;
+}
+#endif
 #define s_clock_gettime     clock_gettime 
 
 #define s_stderr   0
-#define s_exit     o_unimplemented
-#define s_abort    o_unimplemented
-#define s___errno  o_unimplemented
-
-#define s_strerror_r        o_unimplemented
-#define s___stack_chk_fail  o_unimplemented
+UNIMPLEMENTED(s_abort)
+UNIMPLEMENTED(s___errno)
+UNIMPLEMENTED(s_strerror_r)
+UNIMPLEMENTED(s___stack_chk_fail)
 
 #include "jemalloc_reloc.h"

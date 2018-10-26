@@ -1,0 +1,57 @@
+CROSS_COMPILE := aarch64-elf-
+
+CC := $(CROSS_COMPILE)gcc
+AS := $(CROSS_COMPILE)as
+LD := $(CROSS_COMPILE)gcc
+
+CFLAGS   := -g -O2 -Wall
+CFLAGS   += -I../stdlib -I../stdlib/out
+CFLAGS   += -DSEMIHOSTING -DDEBUG_RELOC=0 -DDEBUG_JEMALLOC=0
+ASFLAGS  := -g
+LDFLAGS  := --specs=rdimon.specs -lc -lm
+LDFLAGS  += ututna.lds ../stdlib/out/jemalloc.o ../stdlib/out/stdlib.o -Wl,-Map,out/ututna.map
+
+BIN   := out/ututna.elf
+
+vpath %.s out
+vpath %.c ../stdlib
+vpath %.s ../stdlib
+
+OBJS := \
+	main.o \
+	dummy.o \
+	test_png.o \
+	reloc.o \
+	ututna.o \
+	bootstrap.o \
+	malloc.o \
+	jemalloc.o \
+	jemalloc_exports.o \
+	stdlib.o \
+	stdlib_test.o \
+	stdlib_exports.o \
+	600_fft.o \
+	601_gemm.o \
+	603_map.o \
+	609_png.o \
+	614_physics.o \
+	607_hash.o
+
+OBJS := $(patsubst %.o,./obj/%.o,$(OBJS))
+
+.PHONY: all clean
+
+all: $(BIN)
+
+$(BIN): $(OBJS)
+	@echo Linking $@...
+	$(LD) $(LDFLAGS) -o $@ $^
+
+obj/%.o : %.c
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+obj/%.o : %.s
+	$(AS) $(ASFLAGS) -o $@ $<
+
+clean:
+	rm -rf obj/*.o $(BIN) out/ututna.map

@@ -6,13 +6,24 @@
 #include "jemalloc.h"
 #include "stdlib_.h"
 
+#ifndef SEMIHOSTING
 static struct timeval start;
+#endif
+
+void tp_start();
+void tp_end();
 
 void begin() {
+#ifndef SEMIHOSTING
 	gettimeofday(&start, NULL);
+#else
+	fprintf(stderr, ".");
+	tp_start();
+#endif
 }
 
 double end() {
+#ifndef SEMIHOSTING
 	struct timeval tv;
 	gettimeofday(&tv, NULL);
 
@@ -20,16 +31,68 @@ double end() {
 	double seconds = (double)usec / 1000000.0;
 
 	return seconds;
+#else
+	tp_end();
+	fprintf(stderr, ".");
+	return 0;
+#endif
+}
+
+int s_gettimeofday_begin(struct timeval*tv, struct timezone *tz) {
+#ifndef SEMIHOSTING
+	return gettimeofday(tv, tz);
+#else
+	tp_start();
+	return 0;
+#endif
+}
+
+int s_gettimeofday_end(struct timeval*tv, struct timezone *tz) {
+#ifndef SEMIHOSTING
+	return gettimeofday(tv, tz);
+#else
+	tp_end();
+	return 0;
+#endif
+}
+
+uint64_t StartStopwatch(void *tv);
+uint64_t s_StartStopwatch(void *tv) {
+#ifndef SEMIHOSTING
+	return StartStopwatch(tv);
+#else
+	fprintf(stderr, ".");
+	tp_start();
+	return 0;
+#endif
+}
+
+uint64_t StopStopwatch(uint64_t v1, uint64_t v2, uint64_t v3, uint64_t v4);
+uint64_t s_StopStopwatch(uint64_t v1, uint64_t v2, uint64_t v3, uint64_t v4) {
+#ifndef SEMIHOSTING
+	return StopStopwatch(v1, v2, v3, v4);
+#else
+	tp_end();
+	fprintf(stderr, ".");
+	return 0;
+#endif
 }
 
 void print_header(void) {
+#ifndef SEMIHOSTING
 	fprintf(stderr, "%-12s %7s %8s  %s\n", "NAME", "SCORE", "LOOPS", "DURATION(s)");
+#endif
 }
+
 void print_score(const char *name, double score, int loops, double secs) {
+#ifdef SEMIHOSTING
+	fprintf(stderr, "%-12s\n", name);
+#else
 	if (score == 0.0)
 		fprintf(stderr, "%-12s %7s %8d  %.6f\n", name, "-", loops, secs);
 	else
 		fprintf(stderr, "%-12s %7u %8d  %.6f\n", name, (int)(score + 0.5), loops, secs);
+#endif
 }
 
 extern void *kiss_fftr_alloc(int, int, char*, char*);
@@ -175,8 +238,10 @@ extern unsigned int test_png_len;
 void test_609_png(int loops) {
 	char buf[128] = { 0 };
 	double secs = 0;
+	begin();
 	for (int i=0; i<loops; i++)
 		secs += _Z10loadMemPNGPhjP7BmpData(test_png, test_png_len, buf);
+	end();
 
 	double score = (double)loops * 1000.0 / secs;
 	print_score("609_PNG", score, loops, secs);
@@ -222,24 +287,30 @@ void test_607_hash(int loops) {
 	s_free(data);
 }
 
+void bootstrap();
+
 int main(int argc, char *argv[]) {
-	int arg1 = argc > 1 ? atoi(argv[1]) : 0;
-	int arg2 = argc > 2 ? atoi(argv[2]) : 0;
+	int id = argc > 1 ? atoi(argv[1]) : 0;
+	int loops = argc > 2 ? atoi(argv[2]) : 0;
 
-	jemalloc_init();
-	stdlib_init();
+	bootstrap();
 
-	fprintf(stderr, "UTUTNA:\n");
+	fprintf(stderr, "UTUTNA\n");
+
+	if (loops != 0)
+		fprintf(stderr, "LOOPS: %d\n", loops);
 	print_header();
 
-	if (arg1 == 0 || arg1 == 600) test_600_fft(arg2 ? arg2 : 200000);
-	if (arg1 == 0 || arg1 == 601) test_601_gemm(arg2 ? arg2 : 1000);
-	if (arg1 == 0 || arg1 == 603) test_603_map(arg2 ? arg2 : 500);
-	if (arg1 == 0 || arg1 == 609) test_609_png(arg2 ? arg2 : 1000);
-	if (arg1 == 0 || arg1 == 614) test_614_physics(arg2 ? arg2 : 600);
-	if (arg1 == 0 || arg1 == 607) test_607_hash(arg2 ? arg2 : 5000);
+	if (id == 0 || id == 600) test_600_fft(loops ? loops : 200000);
+	if (id == 0 || id == 601) test_601_gemm(loops ? loops : 1000);
+	if (id == 0 || id == 603) test_603_map(loops ? loops : 500);
+	if (id == 0 || id == 609) test_609_png(loops ? loops : 1000);
+	if (id == 0 || id == 614) test_614_physics(loops ? loops : 600);
+	if (id == 0 || id == 607) test_607_hash(loops ? loops : 5000);
 
-	if (arg1 == 1000) stdlib_test();
+	if (id == 1000) stdlib_test();
+
+	fprintf(stderr, "done\n");
 
 	return 0;
 }

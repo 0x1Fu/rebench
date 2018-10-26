@@ -1,0 +1,5 @@
+MEMORY
+{
+  ROM (rx)  : ORIGIN =   0x100000, LENGTH = 128M
+  RAM (rxw) : ORIGIN = 0x40000000, LENGTH = 2048M
+}

@@ -2,8 +2,11 @@
 #include <stdio.h>
 #include <memory.h>
 #include <unistd.h>
-#include <sys/mman.h>
 #include <elf.h>
+
+#ifndef SEMIHOSTING
+#include <sys/mman.h>
+#endif
 
 #ifndef DEBUG_RELOC
 #define DEBUG_RELOC 0
@@ -56,7 +59,11 @@ void reloc(uint64_t bin_start, uint64_t bin_size,
 	debug("bin_start = 0x%lx\n", bin_start);
 	debug("bin_size  = 0x%lx\n", bin_size);
 
+#ifdef SEMIHOSTING
+	char *ptr = (char *)addr;
+#else
 	char *ptr = mmap((void *)addr, size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+#endif
 
 	if (ptr != (void *)addr) {
 		fprintf(stderr, "[stdlib] error: mmap, returns %p, expected %lx\n", ptr, addr);
@@ -70,12 +77,14 @@ void reloc(uint64_t bin_start, uint64_t bin_size,
 	debug("bss_start  = %p\n", ptr + bss_start);
 	debug("bss_end    = %p\n", ptr + bss_start + bss_size);
 
+#ifndef SEMIHOSTING
 	char *reloc_text_start = (char *)ALIGN(addr + text_start, PAGE_SIZE);
 	char *reloc_text_end = (char *)ALIGN_UP(addr + text_start + text_size, PAGE_SIZE);
 	debug("text_start = 0x%lx 0x%p\n", text_start, reloc_text_start);
 	debug("text_end   = 0x%lx 0x%p\n", text_start + text_size, reloc_text_end);
 
 	mprotect(reloc_text_start, reloc_text_end - reloc_text_start, PROT_READ | PROT_EXEC);
+#endif
 
 	do_reloc(relocs, addr);
 }

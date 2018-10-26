@@ -103,6 +103,8 @@ process 609_png.s $LIB \
   png_destroy_read_struct png_destroy_info_struct png_destroy_gamma_table \
   png_zfree png_destroy_png_struct png_free_jmpbuf \
   L66b18-66b8c L7a214-7a6bc L7c010-7c118
+replace 609_png.s L66984: gettimeofday s_gettimeofday_begin
+replace 609_png.s L66a88: gettimeofday s_gettimeofday_end
 
 process 614_physics.s $LIB \
   @test_physics cpSpaceNew cpSpaceInit cpBBTreeNew cpSpatialIndexInit \
@@ -124,12 +126,14 @@ process 614_physics.s $LIB \
   cpBodyRemoveShape cpHashSetRemove cpShapeFree cpArrayDeleteObj \
   cpSpaceEachConstraint cpSpaceEachBody cpSpaceRemoveBody cpBodyFree \
   cpSpaceFree cpSpaceDestroy \
-  StartStopwatch StopStopwatch TicksToFracSecs \
+  @StartStopwatch @StopStopwatch TicksToFracSecs \
   L8b5a0-8b5c0 L8b5e0-8b624 L8b648-8b66C L8d814-8d8b0 \
   L90058-90154 L93d88-93fd4 L9a820-9a86c L9bc4c-9bc54 \
   L9be30-9be74 L9bc54-9bc58 L9ca0c-9cad0 L9ce84-9ce8c \
   L9e7d4-9ea30 L9ebe0-9ed04 L9ed30-9edec L9ef2c-9f024 \
   L9f570-9f804 L9f838-9fb88 La0cf8-a0d78
+replace 614_physics.s L8b4bc: StartStopwatch s_StartStopwatch
+replace 614_physics.s L8b4f8: StopStopwatch s_StopStopwatch
 
 process 607_hash.s $LIB \
   @generate_test_data encryption_data av_aes_init av_aes_crypt \

@@ -14,7 +14,7 @@ void s_free();
 
 #define UNIMPLEMENTED(func) \
 static void func() { \
-	fprintf(stderr, "unimplemented: %s\n", __func__); \
+	fprintf(stderr, "[stdlib] unimplemented: %s\n", __func__); \
 	exit(-1); \
 }
 
@@ -61,7 +61,6 @@ UNIMPLEMENTED(s___ctype_get_mb_cur_max)
 UNIMPLEMENTED(s_btowc)
 UNIMPLEMENTED(s_close)
 UNIMPLEMENTED(s_dup3)
-UNIMPLEMENTED(s_exit)
 UNIMPLEMENTED(s_fcntl)
 UNIMPLEMENTED(s_flockfile)
 UNIMPLEMENTED(s_getdelim)

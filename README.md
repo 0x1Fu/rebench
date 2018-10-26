@@ -15,3 +15,11 @@ CPU MATH
 
 UX SEC
 > * 607 HASH
+
+**Command Line**
+
+```bash
+qemu-system-aarch64 -machine virt -cpu cortex-a53 -nographic -monitor null \
+  -serial null -semihosting -semihosting-config ram_start=0x40000000 -m 2048M \
+  -kernel ututna.elf -append "0 1"
+```

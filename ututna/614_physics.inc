@@ -119,7 +119,7 @@ L1ac588:
 L1ac608:
 	.8byte o_unimplemented
 L1ac670:
-	.8byte free
+	.8byte s_free
 L1aca40:
 	.8byte L1ad0e0
 L1acd28:

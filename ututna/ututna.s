@@ -11,3 +11,12 @@ L1acb60:
 	.8byte Lstack_chk_guard
 L1ac730:
 	.8byte o_unimplemented
+
+	.global tp_start
+	.global tp_end
+tp_start:
+	orr	x3, x3, x3
+	ret
+tp_end:
+	orr x4, x4, x4
+	ret
