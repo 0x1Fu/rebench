@@ -103,8 +103,6 @@ process 609_png.s $LIB \
   png_destroy_read_struct png_destroy_info_struct png_destroy_gamma_table \
   png_zfree png_destroy_png_struct png_free_jmpbuf \
   L66b18-66b8c L7a214-7a6bc L7c010-7c118
-replace 609_png.s L66984: gettimeofday s_gettimeofday_begin
-replace 609_png.s L66a88: gettimeofday s_gettimeofday_end
 
 process 614_physics.s $LIB \
   @test_physics cpSpaceNew cpSpaceInit cpBBTreeNew cpSpatialIndexInit \

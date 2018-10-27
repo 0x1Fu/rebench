@@ -11,7 +11,7 @@
 	.align 3
 
 export s_malloc   je_malloc_ptr
-export s_calloc   je_calloc_ptr
+export s_calloc0  je_calloc_ptr
 export s_realloc  je_realloc_ptr
 export s_free     je_free_ptr
 

@@ -102,6 +102,7 @@ static void *s_mmap(void *addr, size_t len, int prot, int flags, int fd, off_t o
 	void *ptr = mmap(addr, len, prot, flags, fd, off);
 #else
 	void *ptr = _sbrk(len);
+	// todo: memset?
 #endif
 	debug("mmap: addr=%p, len=%ld, prot=%d, flags=%d, fd=%d, off=%ld, ret=%p\n",
 		  addr, len, prot, flags, fd, off, ptr);
@@ -148,5 +149,16 @@ UNIMPLEMENTED(s_abort)
 UNIMPLEMENTED(s___errno)
 UNIMPLEMENTED(s_strerror_r)
 UNIMPLEMENTED(s___stack_chk_fail)
+
+void *s_calloc0(size_t n, size_t size);
+
+void *s_calloc(size_t n, size_t size) {
+	void *ptr = s_calloc0(n, size);
+	size_t total = n * size;
+	if (total >= 20480) // todo:
+		s_memset(ptr, 0, total);
+
+	return ptr;
+}
 
 #include "jemalloc_reloc.h"

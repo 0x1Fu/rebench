@@ -38,24 +38,6 @@ double end() {
 #endif
 }
 
-int s_gettimeofday_begin(struct timeval*tv, struct timezone *tz) {
-#ifndef SEMIHOSTING
-	return gettimeofday(tv, tz);
-#else
-	tp_start();
-	return 0;
-#endif
-}
-
-int s_gettimeofday_end(struct timeval*tv, struct timezone *tz) {
-#ifndef SEMIHOSTING
-	return gettimeofday(tv, tz);
-#else
-	tp_end();
-	return 0;
-#endif
-}
-
 uint64_t StartStopwatch(void *tv);
 uint64_t s_StartStopwatch(void *tv) {
 #ifndef SEMIHOSTING
@@ -236,11 +218,14 @@ extern unsigned char test_png[];
 extern unsigned int test_png_len;
 
 void test_609_png(int loops) {
-	char buf[128] = { 0 };
+	void *ret[10];
 	double secs = 0;
-	begin();
-	for (int i=0; i<loops; i++)
-		secs += _Z10loadMemPNGPhjP7BmpData(test_png, test_png_len, buf);
+	begin(); // todo:
+	for (int i=0; i<loops; i++) {
+		ret[0] = 0;
+		secs += _Z10loadMemPNGPhjP7BmpData(test_png, test_png_len, ret);
+		if (ret[0]) s_free(ret[0]);
+	}
 	end();
 
 	double score = (double)loops * 1000.0 / secs;
