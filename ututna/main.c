@@ -1,10 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <memory.h>
 #include <sys/time.h>
 
 #include "jemalloc.h"
 #include "stdlib_.h"
+#include "perf.h"
 
 #ifndef SEMIHOSTING
 static struct timeval start;
@@ -16,6 +18,7 @@ void tp_end();
 void begin() {
 #ifndef SEMIHOSTING
 	gettimeofday(&start, NULL);
+	perf_begin();
 #else
 	fprintf(stderr, ".");
 	tp_start();
@@ -24,6 +27,8 @@ void begin() {
 
 double end() {
 #ifndef SEMIHOSTING
+	perf_end();
+
 	struct timeval tv;
 	gettimeofday(&tv, NULL);
 
@@ -41,7 +46,9 @@ double end() {
 uint64_t StartStopwatch(void *tv);
 uint64_t s_StartStopwatch(void *tv) {
 #ifndef SEMIHOSTING
-	return StartStopwatch(tv);
+	uint64_t ret = StartStopwatch(tv);
+	perf_begin();
+	return ret;
 #else
 	fprintf(stderr, ".");
 	tp_start();
@@ -52,6 +59,7 @@ uint64_t s_StartStopwatch(void *tv) {
 uint64_t StopStopwatch(uint64_t v1, uint64_t v2, uint64_t v3, uint64_t v4);
 uint64_t s_StopStopwatch(uint64_t v1, uint64_t v2, uint64_t v3, uint64_t v4) {
 #ifndef SEMIHOSTING
+	perf_end();
 	return StopStopwatch(v1, v2, v3, v4);
 #else
 	tp_end();
@@ -62,18 +70,22 @@ uint64_t s_StopStopwatch(uint64_t v1, uint64_t v2, uint64_t v3, uint64_t v4) {
 
 void print_header(void) {
 #ifndef SEMIHOSTING
-	fprintf(stderr, "%-12s %7s %8s  %s\n", "NAME", "SCORE", "LOOPS", "DURATION(s)");
+	fprintf(stderr, "%-15s %7s %8s  %s", "NAME", "SCORE", "LOOPS", "DURATION(s)");
+	perf_print_headers();
 #endif
 }
 
 void print_score(const char *name, double score, int loops, double secs) {
 #ifdef SEMIHOSTING
-	fprintf(stderr, "%-12s\n", name);
+	fprintf(stderr, "%-15s\n", name);
 #else
 	if (score == 0.0)
-		fprintf(stderr, "%-12s %7s %8d  %.6f\n", name, "-", loops, secs);
+		fprintf(stderr, "%-15s %7s %8d  %.6f   ", name, "-", loops, secs);
 	else
-		fprintf(stderr, "%-12s %7u %8d  %.6f\n", name, (int)(score + 0.5), loops, secs);
+		fprintf(stderr, "%-15s %7u %8d  %.6f   ", name, (int)(score + 0.5), loops, secs);
+
+	perf_print();
+	fprintf(stderr, "\n");
 #endif
 }
 
@@ -161,16 +173,16 @@ void test_601_gemm(int loops) {
 	int loops_dgemm = loops > 1 ? loops / 2 : 1;
 
 	double sgemm = test_601_sgemm(loops);
-	gemm_cleanup();
-	double dgemm = test_601_dgemm(loops_dgemm);
+	double score_sgemm = (double)loops * 335.54432 / sgemm;
+	print_score("[SGEMM]", score_sgemm, loops, sgemm);
 	gemm_cleanup();
 
-	double score_sgemm = (double)loops * 335.54432 / sgemm;
+	double dgemm = test_601_dgemm(loops_dgemm);
 	double score_dgemm = (double)loops_dgemm * 335.54432 / dgemm;
+	print_score("[DGEMM]", score_dgemm, loops_dgemm, dgemm);
+	gemm_cleanup();
 
 	print_score("601_GEMM", score_sgemm + score_dgemm, loops, sgemm + dgemm);
-	print_score(" SGEMM", score_sgemm, loops, sgemm);
-	print_score(" DGEMM", score_dgemm, loops_dgemm, dgemm);
 }
 
 extern double test_map(int loops);
@@ -198,7 +210,14 @@ double _Z15test_const_timeR8CMapTestd(void* map, double tm) {
 	double secs = end();
 
 	double score = i * func2(map) / secs / 1000000.0;
-	test_map_results[test_map_idx++] = secs;
+	test_map_results[test_map_idx] = secs;
+
+	if (test_map_idx == 0)
+		print_score("[MAP.ORDERED]", 0, loops, test_map_results[0]);
+	else
+		print_score("[MAP.UNORDERED]", 0, loops_unordered, test_map_results[1]);
+
+	test_map_idx++;
 
 	return score;
 }
@@ -209,8 +228,6 @@ void test_603_map(int loops) {
 	double score = test_map(loops * 2) * 10000.0;
 
 	print_score("603_MAP", score, loops, test_map_results[0] + test_map_results[1]);
-	print_score(" ORDERED", 0, loops, test_map_results[0]);
-	print_score(" UNORDERED", 0, loops_unordered, test_map_results[1]);
 }
 
 extern double _Z10loadMemPNGPhjP7BmpData(void *, int, void *);
@@ -275,10 +292,22 @@ void test_607_hash(int loops) {
 void bootstrap();
 
 int main(int argc, char *argv[]) {
-	int id = argc > 1 ? atoi(argv[1]) : 0;
-	int loops = argc > 2 ? atoi(argv[2]) : 0;
+	int id = 0;
+	int loops = 0;
 
 	bootstrap();
+
+	int c;
+	while ((c = getopt(argc, argv, "h:c:r:i:?")) != -1) {
+		perf_config(c, strtoul(optarg, NULL, 16));
+	}
+
+	if (optind < argc)
+		id = atoi(argv[optind++]);
+	if (optind < argc)
+		loops = atoi(argv[optind++]);
+
+	perf_init();
 
 	fprintf(stderr, "UTUTNA\n");
 

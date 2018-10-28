@@ -17,6 +17,7 @@ LOCAL_SRC_FILES := \
 	dummy.c \
 	test_png.c \
 	reloc.c \
+	perf.c \
 	ututna.s \
 	../stdlib/jemalloc.c \
 	../stdlib/jemalloc_exports.s \

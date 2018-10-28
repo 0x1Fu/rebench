@@ -119,6 +119,16 @@ static int s_madvise(caddr_t addr, size_t len, int advice) {
 #endif
 }
 
+int s_munmap(void *addr, size_t len) {
+#ifndef SEMIHOSTING
+	return munmap(addr, len);
+#else
+	return 0;
+#endif
+}
+
+UNIMPLEMENTED(s_write)
+
 size_t s_strlen(const char *s);
 char *s_strchr(const char *s, int c);
 long int s_strtol(const char *nptr, char **endptr, int base);
@@ -128,12 +138,6 @@ void *s_memcpy(void *dest, const void *src, size_t n);
 int s_memcmp(const void *s1, const void *s2, size_t n);
 void *s_memset(void *s, int c, size_t n);
 void *s_memmove(void *dest, const void *src, size_t n);
-#ifdef SEMIHOSTING
-DUMMY(s_munmap)
-#else
-UNIMPLEMENTED(s_munmap)
-#endif
-UNIMPLEMENTED(s_write)
 
 #ifdef SEMIHOSTING
 int clock_gettime(clockid_t clk_id,struct timespec *tp) {
