@@ -10,7 +10,7 @@
 #define MAX_COUNTERS 10
 
 #define PMU_L1D_CACHE             0x04
-#define PMU_L1D_CACHE_REFILL      0x05
+#define PMU_L1D_CACHE_REFILL      0x03
 #define PMU_INST_RETIRED          0x08
 #define PMU_CPU_CYCLES            0x11
 #define PMU_L2D_CACHE             0x16
